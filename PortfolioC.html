@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+		<link href="css/nv.d3.css" type="text/css" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="css/bootstrap-select.css" />
+		<link rel="stylesheet" type="text/css" href="css/sparkbar.css" />
+		<link rel="stylesheet" type="text/css" href="css/bootstrap_btn_custom.css" />
+		<link rel="stylesheet" type="text/css" href="css/jdcGrid.css" />
+		<link rel="stylesheet" type="text/css" href="css/ptsb.css" />
+		<!--css><!-->
+		<!--<link href="./dist/portfolioStatistics.min.css" rel="stylesheet" type="text/css">!-->
+		<!--><css!-->
+		<!--css><!-->
+		<!--<link rel="stylesheet" type="text/css" href="css/bootstrap_btn_custom.css" />!-->
+		<!--><css!-->
+		<!--css><!-->
+		<!--<link rel="stylesheet" type="text/css" href="css/jdcGrid.css" />!-->
+		<!--><css!-->
+		<!--css><!-->
+		<!--<link rel="stylesheet" type="text/css" href="css/ptsb.css" />!-->
+		<!--><css!-->
+		<style>
+
+		.page{
+			max-width: 1300px;
+		}
+		@media only screen and (min-resolution:96dpi) and (max-resolution:264dpi) and (min-width:768px) and (max-width:1024px), only screen and (-webkit-min-device-pixel-ratio: 1) and (-webkit-max-device-pixel-ratio:2) and (min-width:768px) and (max-width:1024px) {
+				.page{
+				max-width: 100%;
+			}
+	    }
+
+		body {
+			overflow-y:scroll;
+			font-family: 'Lato', Arial, sans-serif;
+		}
+
+		button text {
+		  font: 1.5em; /* sans-serif;*/
+		  stroke: white;
+		}
+
+		#filterChart {
+		  height: 700px;
+		}
+
+		.menu-bar {
+			line-height:0px;
+			margin:0;
+			padding:0;
+		}
+
+		.menu-bar div {
+			width:32px;
+			height:32px;
+			line-height:0px;
+			display:inline
+		}
+
+		.menu-bar svg {
+			width:32px;
+			height:32px;
+			display:inline
+		}
+
+		.center {
+			margin-left:2px;
+			margin-right:2px
+		}
+
+		html, body {
+			height: 100%;
+		}
+
+		.splash {
+			position: absolute;
+			left: 0px;
+			right: 0px;
+			padding: 30px;
+			z-index:10;
+			min-width: 100%;
+			min-height: 100%;
+			display: table;
+		}
+
+
+		.middle {
+		    display: table-cell;
+		    vertical-align: middle;
+		}
+
+		.out {
+			position: absolute;
+			z-index:10;
+			width:800px;
+		}
+
+		.dropdown-style {
+			font-size: 12pt;
+			color: #FFFFFF;
+			background-color: #ff9900;
+		}
+
+		.navy {
+			background-color: navy;
+			color: navy;
+		}
+
+		</style>
+	</head>
+	<body>
+
+	<div class="splash fabricLarge">
+		<div style="margin-top:10%;color:#00005f">
+			<div style="display:block;margin-left:auto;margin-right:auto;margin-top:auto;margin-bottom:auto">
+				<div class="col-sm-4">
+					<div class="pull-right">
+						<div class="logo"></div>
+						<div class="inception" style="display:block;margin-top:40%;margin-left:25%"></div>
+					</div>
+				</div>
+				<div class="loadReport col-sm-8" style="height=100%;border-left: 1px solid">
+					<h1>Credit Portfolio Analytics</h1>
+					<div class="start_button_round" style="display:none"></div>
+					<!--<h1 id="loadingIndicator">Loading...(please wait)</h1>!-->
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container page fabricLarge" style="height:100%;width:100%">
+		<div class="row-fluid col-sm-12 no-padding" style="padding-top:5px;padding-bottom:5px">
+			<div class="pull-right btn-group prt"></div>
+			<div class="row-fluid" style="display:table">
+				<div class="row-fluid no-padding report"></div>
+			</div>
+		</div>
+		<div class="row-fluid col-sm-12" style="padding:0">
+			<div class="row-fluid col-sm-4" style="padding:0">
+				<div class="row-fluid col-sm-12" style="padding:0">
+					<div class="btn btn-custom btn-sm pull-right expand">>></div>
+					<div class="btn btn-custom btn-sm pull-right expandV">More Filters</div>
+					<!--<div class="btn btn-custom btn-sm back">Undo</div>!-->
+					<div class="btn btn-custom btn-sm reset">Reset</div>
+					<div class="btn-group uom"></div>
+				</div>
+				<div class="row-fluid col-sm-12 slices" style="padding:0">
+					<div id="filterChart" style="padding:0">
+						<svg></svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row-fluid col-sm-8" style="padding:0">
+			<div id="rptMove" class="col-sm-6 hidden"></div>
+			<div id="rpt" style="overflow:scroll">
+			<div id="rpt">
+				<div id="rpt_" class="activeTab">
+					Your browser application has javascript disabled - This report requires javascript to be enabled
+				</div>
+				<div id="rpt0" class="activeTab">
+					<div class="fullspan rptControls">
+							<div class="btn-group pull-right rptPage"></div>
+							<div class="btn-group rptPeriod"></div>
+					</div>
+					<div class="row-fluid" style="padding:5px">
+						<div class="rptTitle indent">Group Profile</div>
+						<div class="full-width rptTitleBorder"></div>
+					</div>
+					<div class="rptBody indent" id="rptDivision"></div>
+					<div class="rptCommentary indent">Additional commentary is placed at this point</div>
+					<div class="rptFooter indent"></div>
+				</div>
+				<div id="rpt1" class="inActiveTab">
+					<div class="fullspan rptControls">
+							<div class="btn-group pull-right rptPage"></div>
+							<div class="btn-group rptPeriod"></div>
+					</div>
+					<div class="row-fluid" style="padding:5px">
+						<div class="rptTitle indent">Arrears Profile</div>
+						<div class="full-width rptTitleBorder"></div>
+					</div>
+					<div class="rptBody indent" id="rptArrears"></div>
+					<div class="rptCommentary indent">Additional commentary is placed at this point</div>
+					<div class="rptFooter indent"></div>
+				</div>
+				<div id="rpt2" class="inActiveTab">
+					<div class="fullspan rptControls">
+							<div class="btn-group pull-right rptPage"></div>
+							<div class="btn-group rptPeriod"></div>
+					</div>
+					<div class="row-fluid" style="padding:5px">
+						<div class="rptTitle indent">Forbearance</div>
+						<div class="full-width rptTitleBorder"></div>
+					</div>
+					<div class="rptBody indent" id="rptFB"></div>
+					<div class="rptCommentary indent">Additional commentary is placed at this point</div>
+					<div class="rptFooter indent"></div>
+				</div>
+				<div id="rpt3" class="inActiveTab">
+					<div class="fullspan rptControls">
+							<div class="btn-group pull-right rptPage"></div>
+							<div class="btn-group rptPeriod"></div>
+					</div>
+					<div class="row-fluid" style="padding:5px">
+						<div class="rptTitle indent">Rate\Repayment Characteristics</div>
+						<div class="full-width rptTitleBorder"></div>
+					</div>
+					<div class="rptBody indent" id="rptRate"></div>
+					<div class="rptCommentary indent">Additional commentary is placed at this point</div>
+					<div class="rptFooter indent"></div>
+				</div>
+				<div id="rpt4" class="inActiveTab">
+					<div class="fullspan rptControls">
+							<div class="btn-group pull-right rptPage"></div>
+							<div class="btn-group rptPeriod"></div>
+					</div>
+					<div class="row-fluid" style="padding:5px">
+						<div class="rptTitle indent">Loan Size Profile</div>
+						<div class="full-width rptTitleBorder"></div>
+					</div>
+					<div class="rptBody indent" id="rptLoanSize"></div>
+					<div class="rptCommentary indent">Additional commentary is placed at this point</div>
+					<div class="rptFooter indent"></div>
+				</div>
+				<div id="rpt5" class="inActiveTab">
+					<div class="fullspan rptControls">
+							<div class="btn-group pull-right rptPage"></div>
+							<div class="btn-group rptPeriod"></div>
+					</div>
+					<div class="row-fluid" style="padding:5px">
+						<div class="rptTitle indent">Indexed Loan To Value Profile</div>
+						<div class="full-width rptTitleBorder"></div>
+					</div>
+					<div class="rptBody indent" id="rptLTV"></div>
+					<div class="rptCommentary indent">Additional commentary is placed at this point</div>
+					<div class="rptFooter indent"></div>
+				</div>
+				<div id="rpt6" class="inActiveTab">
+					<div class="fullspan rptControls">
+							<div class="btn-group pull-right rptPage"></div>
+							<div class="btn-group rptPeriod"></div>
+					</div>
+					<div class="row-fluid" style="padding:5px">
+						<div class="rptTitle indent">Geographic Distribution</div>
+						<div class="full-width rptTitleBorder"></div>
+					</div>
+					<div class="rptBody indent" id="rptGeo"></div>
+					<div class="rptCommentary indent">Additional commentary is placed at this point</div>
+					<div class="rptFooter indent"></div>
+				</div>
+			</div>
+			<div id=output>
+			</div>
+		    </div><!-- /example -->
+			<div class="logo" style="position:fixed;bottom:0;right:70px"></div>
+		</div>
+
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		      	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+		      </div>
+		      <div class="modal-body" id="popupChartBS">
+		        <div class="row-fluid col-sm-10"><svg width="100%" height="445"></svg></div>
+		        <div class="row-fluid col-sm-1 no-padding fill-color btn-group-vertical full-width" id="popupSlice"></div>
+				<div class="row-fluid col-sm-1 no-padding fill-color btn-group-vertical full-width" id="popupSliceA"></div>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		      </div>
+		    </div><!-- /.modal-content -->
+		  </div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
+		<script src="./lib/jquery-1.10.2.js"></script>
+		<script src="./lib/jquery.uriAnchor.js"></script>
+		<script src="./lib/bootstrap.js"></script>
+		<script src="./lib/bootstrap-select.js"></script>
+		<script src="./lib/canvg.js"></script>
+		<script src="./lib/rgbcolor.js"></script>
+		<script src="./lib/stackblur.js"></script>
+		<script src="./lib/d3.v3.js"></script>
+		<script src="./lib/colorbrewer.v1.min.js"></script>
+		<script src="./lib/nv.d3.js"></script>
+		<script src="./lib/nv_d3_horiz_stacked_bar.js"></script>
+		<script src="./lib/pako.min.js"></script>
+		<!--scriptStub><!-->
+		<!--<script src="./dist/portfolioStatistics.min.js"></script>!-->
+		<!--><scriptStub!-->
+		<script src="./jdc/jdcUtils.js"></script>
+		<script src="./jdc/jdcState.js"></script>
+		<script src="./jdc/dFilter.js"></script>
+		<script src="./jdc/dProvider.js"></script>
+		<script src="./jdc/jdcGrid.js"></script>
+		<script src="./jdc/dDimFilter.js"></script>
+		<script src="./jdc/grids.js"></script>
+		<script src="./jdc/jdcDataShape.js"></script>
+		<script src="./jdc/dDimMekko.js"></script>
+		<!--scriptStub><!-->
+		<!--<script src="./dist/jdcportfolioStatistics.min.js"></script>!-->
+		<!--><scriptStub!-->
+		<script>
+
+			//*******************************************************************************
+			// Configuration requirements
+			//*******************************************************************************
+
+			//var periods = periodsCreate(201201,35);
+			var periods = { mth : [201312,201412], ndx : { 201312 : 0, 201412 : 1}};
+			console.log(periods);
+			var utilsValues = {
+				"shortmonths"	: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+				"monthsletters"	: ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"],
+				"fullmonths"	: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+				"shortdays"		: ["M", "T", "W", "T", "F", "S", "S"],
+				"fulldays" 		: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+
+			}
+			var numPeriods = periods.mth.length;
+
+				//*******************************************************************************
+				//Step 4 - Create Dashboard - moved from jdcGrid
+				//*******************************************************************************
+				//Defaults for report defnition - Helper function for accessing state properties
+				function reportDefaults(current,YTDMths){
+					var ret = {};
+					ret.e = function(){return state.entity();}; //this might be changed
+					ret.p = function(){return state.portfolio();};
+					ret.u = function(){return state.uom();};
+
+					//ret.c = function(){return current;};
+					ret.c = function(){return state.rptPeriod();};
+					ret.l = function(){return current-1;};
+					ret.ly = function(){return current-12;};
+					ret.ytd = function(){return YTDMths;};
+
+					return ret;
+				}
+				var def = reportDefaults(numPeriods-1,0);
+
+		</script>
+
+		<script>
+			$(document).ready(function(){
+					if(!document.createElement('svg').getAttributeNS){
+				  	document.write('Your browser does not support SVG!');
+				  	return;
+					}
+			});
+
+			// Global variable
+			var anchor,state,rpts = {}, dataDims, pxf, dims, mres, dataNew, dimsEncoded, displayNames;
+
+			//Only used in cell clicked
+			function displayFilters(key,long){
+				var ret = "";
+				//console.log(key);
+				for(k in key){
+					if(dims[k]){
+						var v=f(key[k]);
+						if(long===true || v!=='_'){
+							if(ret!==""){ ret+=" - ";};
+							var dimValue = v.label || displayNames[k][v] || v;
+							ret += dims[k].display + ": " + dimValue;
+						}
+					}
+				}
+				return ret;
+			}
+
+			// Testing
+			var fired = false, firedTimes = 0;
+			function loadReport(){
+
+				$(".splash").slideUp('slow');
+
+				var t = debugTimer("parsePayLoad");
+				//eval(JXG.decompress(data));
+				dataNew = payLoad();
+				t.lap("completed");
+				//console.log(dataNew);
+				console.log(dataNew['data'][0]);
+
+				//*******************************************************************************
+				// Create User Interface
+				//*******************************************************************************
+				anchor = anchorManager(); //then attach handler
+				state = stateManager(anchor,dataNew["data"]);
+
+				//Sets up buttons and adds them to state object
+				var css = "btn btn-custom";
+				var cssBtnSm = "btn btn-custom btn-sm";
+				//*******************************************************************************
+				//Report Buttons
+				//*******************************************************************************
+				/*var report = stateElement(state, "report", css + " full-width",
+					["Overview","Arrears","Flows", "Cures", "Forbearance","FB Type","SBU","Portfolio","Provision"],null,
+					[reportChange("rpt"),outputStyle("rpt")]); //Additional Handler to fade in/out pages*/
+				//Changed to dropdown
+				var report = stateElementDropdown(state, "report", "dropdown-style",
+					["Group Overview","Arrears Performance", "Forbearance", "Rate Characteristics", "Loan Size distribution","Loan to Value", "Geographic Distribution"],null,
+					[reportChange("rpt"),outputStyle("rpt")]); //Additional Handler to fade in/out pages
+
+				//Handler to add to report state to test output of getComputedStyle
+				function outputStyle(id){
+					return function(stateObj,refNo){
+						return function(){
+							var selector = "#" + id + stateObj["controls"][refNo] + " .table" ;
+							var element = $(selector)[0];
+						}
+					}
+				}
+
+				//*******************************************************************************
+				// Back to UI creation
+				//*******************************************************************************
+				//var rptPortfolio = stateElement(state, "prt", css,["All","HL","BTL","Commercial","CHL","IoM","Consumer"],["_","HL","BTL","Commercial","CHL","IoM","Consumer"],null,0,[0,4,1,3,2,5,6]);
+				var rptPortfolio = stateElement(state, "prt", css,["All","HL","BTL","Commercial","CHL","IoM","Consumer"],["_","d","a","c","b","e","f"],null,0,[0,4,1,3,2,5,6]);
+				//var rptPeriod = stateElement(state, "rptPeriod", cssBtnSm,["2013", "H1 2014","2014"],[0,1,2],null,2);
+				var rptPeriod = stateElement(state, "rptPeriod", cssBtnSm,["2013","2014"],[0,1],null,1);
+				var rptUOM = stateElement(state, "uom", cssBtnSm,["€", "#"],['bal','count']);
+
+				//Buttons for popup chart - NEED to change so updates from dataDims names
+				var popupButtons = [
+					{"name":"Portfolio","value":4},
+					{"name":"Division","value":5},
+					//{"name":"secured","value":2},
+					//{"name":"mre","value":3},
+					{"name":"Sector","value":6},
+					{"name":"Country (sec)","value":8},
+					{"name":"Region (sec)","value":9},
+					{"name":"LTV Band","value":12},
+					{"name":"Neg. Eq.","value":17},
+					{"name":"Loan Size","value":10},
+					{"name":"Vintage","value":13},
+					//{"name":"Term (rem)","value":13},
+
+				];
+
+				var popupButtonsA = [
+					{"name":"Repay Type","value":7},
+					{"name":"Rate Type","value":18},
+					//{"name":"Rate Band","value":14},
+					{"name":"DPD","value":0},
+					{"name":"DPD (detail) ","value":11},
+					{"name":"Forborne","value":1},
+					{"name":"Forb. Type","value":19},
+					{"name":"NPL","value":14},
+					{"name":"Default","value":15},
+					{"name":"impaired","value":16},
+				];
+
+				function popupSlice(e){
+					updatePopupChart(this.value);
+					return false;
+				}
+				//Needs work to show which are active buttons
+				createButtonSet('#popupSlice',popupButtons,cssBtnSm,{ click : popupSlice });
+				createButtonSet('#popupSliceA',popupButtonsA,cssBtnSm,{ click : popupSlice });
+
+				//*******************************************************************************
+				// Set-up Data
+				//*******************************************************************************
+				dims = ['source','brand','prt','ent','jurisdiction','curr','sector','subsector','repay_type','sec_ctry','region',
+				'loan_size_band','dpd_band','ltv_band','rem_term_band','int_rate_band','orig_band','npl','defaulted','impaired',
+				'neg_eq','prop_type','int_rate_type','fb'];
+				//mres = ['count','bal','arrs','prv','ew_DiA','EAD','ew_PD','ew_LGD','RWA','ew_iLTV','ew_int_rate','ew_rem_term','ew_TOB'];
+				mres = ['count','bal','arrs','prv','ew_DiA','ew_iLTV','ew_int_rate','ew_rem_term','ew_TOB'];
+
+				dataDims = dataNew['dims'];
+				dataDims = ['mre'].concat(dataDims); // Hack to add here - could check for tgt in dProvider and add there
+
+				var dpdMap = { "a":"UTD", "b":">0", "d":">30", "f":">30" };
+				var dimsToAddToFilter = [
+					{ 'name' : 'dpd', 'derivedFrom' : 'dpd_band', 'grpFn' : grpCategories(dpdMap,">90") },
+					{ 'name' : 'forborne', 'derivedFrom' : 'fb', 'grpFn' : grpCategories({ "a":"N"},"Y") },
+					{ 'name' : 'secured', 'derivedFrom' : 'ltv_band', 'grpFn' : grpCategories({ "f":"N","g":"N"},"Y") },
+				];
+				dataDims = ['dpd','forborne','secured'].concat(dataDims);
+				console.log(dataDims);
+
+				dimsEncoded = dataNew['dimsEncoded'];
+				console.log(JSON.stringify(dimsEncoded));
+
+				function createDisplayNames(){
+					var res = {};
+					for(var k in dimsEncoded){
+						res[k] = dimsEncoded[k]['encoded'];
+					}
+					return res;
+				}
+				displayNames = createDisplayNames();
+
+				function printDims(){
+					var ret = [];
+					dataDims.forEach(function(e,i,a){
+						ret.push( {'name' : e, 'value' : i} );
+					});
+					return ret;
+				};
+				console.log(JSON.stringify(printDims()));
+				//var dbData = dFilterArray({data : state.data, dims : dataDims,  dimsToAdd  : dimsToAddToFilter,  periods : numPeriods});
+				var dbData = dFilterArray({
+					'data' : state.data,
+					'dims' : dataDims,
+					'dimsToAdd'  : dimsToAddToFilter,
+					'dimsEncoded' : dimsEncoded,
+					'periods' : numPeriods,
+					'filtered' : true,
+					'cubes' : [['prt','ent','sector','repay_type','int_rate_type']],
+					'measures' : ['count','bal','arrs','prv','ew_DiA','ew_iLTV','ew_int_rate','ew_rem_term','ew_TOB']
+					});
+				console.log(dbData);
+				pxf = dProviderArray({ 'dims' : dataDims, 'src' : [{"id" : "_", "data" : dbData }], 'periods' : numPeriods});
+
+				//*******************************************************************************
+				//New filter functonality
+				//*******************************************************************************
+
+				var filterDims = [
+					{"name":"prt","display":"Portfolio","order":["HL","BTL","Commercial","CHL","IoM","Consumer"],"colours":null, 'hide' : true },
+					{"name":"ent","display":"Division","order":["Core","Non-core"],"colours":null},
+					{"name":"sector","display":"Sector","order":["RRE IE","Comm RRE IE","RRE RoW","Comm RRE RoW","Comm CRE IE","Current Account","VISA","Term Lending","NCU"],"colours":null},
+					//{"name":"sec_ctry","display":"Security (ctry)","order":["IE","GB","IM","FR","Missing","NA"],"colours":null},
+					{"name":"region","display":"Region","order":["Dublin","Leinster","Cork","Munster","Connacht","Ulster","London","South East","GB","IM","FR","Missing","NA"],"colours":null},
+					{"name":"repay_type","display":"Repayment","order":["C&I","Part C&I","I/O","Rev"],"colours":null},
+					{"name":"int_rate_type","display":"Rate Type","order":["Tracker","Variable","Fixed"],"colours":null},
+					//{"name":"int_rate_band","display":"Yield","order":["=0","0<1.0","1.0<=2.0","2.0<=5.0","5.0<=10.0","10.0<=20.0","NA"],"colours":null},
+					{"name":"orig_band","display":"Originated","order":["-<2001","2002-2004","2005-2008","2009-2011","2012<-\t"],"colours":null},
+					//{"name":"rem_term_band","display":"Term (rem)","order":["<-1yr","1-5yrs","5-10yrs","10-20yrs","20-30yrs",">30yrs"],"colours":null},
+					{"name":"loan_size_band","display":"Loan Size","order":["0-<1k","1K-<2K","2K-<5K","5K-<10K","10K-<20K","20K-<50K","50K-<100K","100K-<250K","250K-<500K","500K-<1M","1M-high"],"colours":null},
+					{"name":"ltv_band","display":"iLTV","order":["<=70","70-<100","100-<120","120-<150","150+","LTVexclusions","NA"],"colours":null},
+					{"name":"neg_eq","display":"Neg. Equity","order":["Y","N"],"colours":palettes['binary'].slice(0)},
+					{"name":"dpd","display":"Arrears","order":[">90",">30",">0","UTD"],"colours":["#99000d","#3C4244","#D2C1C2","#989898"]},
+					{"name":"dpd_band","display":"Arrs (det)","order":["360<","180-360","90-180","60-90","30-60","0-30","UTD"],"colours":null, 'hide' : true},
+					{"name":"forborne","display":"Forborne","order":["Y","N"],"colours":palettes['binary'].slice(0)},
+					{"name":"fb","display":"Forb. Type","order":["No","Term extension","Capitalisation","Hybrid",">I/O","I/O","<I/O","Split","Zero","Other"],"colours":null, 'hide' : true},
+					{"name":"npl","display":"NPL","order":["Y","N"],"colours":palettes['binary'].slice(0)},
+					{"name":"defaulted","display":"Defaulted","order":["Y","N"],"colours":palettes['binary'].slice(0)},
+					{"name":"impaired","display":"Impaired","order":["Y","N"],"colours":palettes['binary'].slice(0)},
+				];
+				//[Log] [{"name":"dpd","value":0},{"name":"forborne","value":1},{"name":"secured","value":2},{"name":"mre","value":3},{"name":"prt","value":4},{"name":"ent","value":5},{"name":"sector","value":6},{"name":"repay_type","value":7},{"name":"sec_ctry","value":8},{"name":"region","value":9},{"name":"loan_size_band","value":10},{"name":"dpd_band","value":11},{"name":"ltv_band","value":12},{"name":"rem_term_band","value":13},{"name":"int_rate_band","value":14},{"name":"orig_band","value":15},{"name":"npl","value":16},{"name":"defaulted","value":17},{"name":"impaired","value":18},{"name":"neg_eq","value":19},{"name":"int_rate_type","value":20},{"name":"fb","value":21}] (portfolioA.html, line 506)
+				var filterOptions = {
+					'state' : state //should we hook up handlers directly
+					,'source' : dbData //not provider
+					,'container' : '#filterChart svg'
+					//,palette : colorbrewer['Blues'][9].reverse()
+					,'dims' : filterDims
+					, 'dimsEncoded' : dimsEncoded
+				}
+
+				var mainFilter = dDimFilter(filterOptions);
+				console.log(mainFilter);
+
+				// Button Functionality for dDimFilter - to go into dDimFilter
+				var resetGraph = d3.selectAll(".reset")
+								.on("click",reset);
+				// to go into dDimFilter
+				var backGraph = d3.selectAll(".back")
+								.on("click",back);
+
+				function reset(e){ // this needs to change anchor part - should be built into dimFilter
+					mainFilter.reset();
+				}
+
+				function back(e){ // this needs to change anchor part - should be built into dimFilter
+					mainFilter.back();
+				}
+
+				// Expand dDimFilter Functionality
+				$(".expand").click(function(){
+					$("#filterChart").toggleClass("out");
+					$("#rptMove").toggleClass("hidden");
+					$(".rptPage").toggleClass("hidden");
+					$(".expand").html("<<");
+					$(".activeTab").fadeOut('fast', // select all active pages
+						function(){
+							$(".activePage").removeClass("activePage").addClass("inactivePage"); //rptPage
+							if($("#filterChart.out").length===0){
+								$(".pg" + state["rptPage"]()).removeClass("inactivePage").addClass("activePage");
+								$(".expand").html(">>");
+							}
+						})
+					.fadeIn('slow');
+					mainFilter.chart.update();
+				});
+
+				// Expand dDimFilter Functionality
+				$(".expandV").click(function(){
+					if(mainFilter.expanded()===true){
+						$(".expandV").html("Less Filters");
+					} else {
+						$(".expandV").html("More Filters");
+					}
+				});
+
+				//*******************************************************************************
+				//Page Buttons - inserted before report
+				//*******************************************************************************
+				function pageChange(id){
+					return function(stateObj,refNo){
+						return function(){
+							// Change active page for all reports
+							if(stateObj["updated"]===refNo){
+								$(".activeTab").fadeOut('fast', // select all active pages
+									function(){
+										$(".activePage").removeClass("activePage").addClass("inactivePage");
+										$("." + id + stateObj["controls"][refNo]).removeClass("inactivePage").addClass("activePage"); // only changing active report
+									})
+								.fadeIn('slow');
+							}
+						}
+					}
+				}
+				var rptPage = stateElement(state, "rptPage", cssBtnSm,["Exposure","Stats", "KPI's"],["0", "1", "2"],[pageChange("pg")]);
+
+				//
+				//*******************************************************************************
+				//Step 4.2 - Initialise Dashboards
+				//*******************************************************************************
+				//Initalise reports
+				var reportDef0 = rptDef0();
+				var reportDef1 = rptDef1();
+				var reportDef2 = rptDef2();
+				var reportDef3 = rptDef3();
+				var reportDef4 = rptDef4();
+				var reportDef5 = rptDef5();
+				var reportDef6 = rptDef6();
+
+				var rptDiv = rpts[reportDef0.name] = rpts[reportDef0.ref] = jdcGrid({source : pxf, def: reportDef0, pageCtrl : state['rptPage'] });
+				var rptArrs = rpts[reportDef1.name] = rpts[reportDef1.ref] = jdcGrid({source : pxf, def: reportDef1, pageCtrl : state['rptPage'] });
+				var rptFB = rpts[reportDef2.name] = rpts[reportDef2.ref] = jdcGrid({source : pxf, def: reportDef2, pageCtrl : state['rptPage'] });
+				var rptRate = rpts[reportDef3.name] = rpts[reportDef3.ref] = jdcGrid({source : pxf, def: reportDef3, pageCtrl : state['rptPage'] });
+				var rptLoanSize = rpts[reportDef4.name] = rpts[reportDef4.ref] = jdcGrid({source : pxf, def: reportDef4, pageCtrl : state['rptPage'] });
+				var rptLTV = rpts[reportDef5.name] = rpts[reportDef5.ref] = jdcGrid({source : pxf, def: reportDef5, pageCtrl : state['rptPage'] });
+				var rptGeo = rpts[reportDef6.name] = rpts[reportDef6.ref] = jdcGrid({source : pxf, def: reportDef6, pageCtrl : state['rptPage'] });
+
+				//state.addView({ref:0, update:function(){return 0;}},0);
+				state.addView(rptDiv,0);
+				state.addView(rptArrs,1);
+				state.addView(rptFB,2);
+				state.addView(rptRate,3);
+				state.addView(rptLoanSize,4);
+				state.addView(rptLTV,5);
+				state.addView(rptGeo,6);
+
+				//Test code for overview
+				var links = d3.selectAll(".link")
+								.on("click",linkClick);
+
+				function linkClick(e){
+					var item=d3.select(this);
+					var v=JSON.parse(item.attr("value"));
+					//alert(v);
+					changeAnchorPart(v);
+					return false;
+				}
+
+				//*******************************************************************************
+				//Step 5 - Set-up event handler and finalise
+				//*******************************************************************************
+				$(window) //move this to bottom
+					.bind( 'hashchange', anchor.onHashchange )
+				anchor.changeAnchorPart({report:0});
+
+			}
+
+		</script>
+		<!--scriptStub><!-->
+		<script src="./data/payloadfc.js"></script>
+		<!--><scriptStub!-->
+		<script>
+			eval(pako.inflate(window.atob(payLoadData), { to: 'string' }));
+			var load = d3.selectAll(".loadReport")
+							.on("click",loadReport);
+			$(".start_button_round").css("display","block");
+			/*$("#loadingIndicator").html("Report Loaded - Click button to open");*/
+
+			/*var alphabet = "abcdefghijklmnopqrstuvwxyz";
+			var alphabetArray = alphabet.split("").concat(alphabet.toUpperCase().split(""));
+			alphabet += alphabet.toUpperCase();
+
+			function stringsToCompare(l){
+				var s0="", s1="", s2="", s3="";
+				s0 = alphabet.charAt(Math.floor((Math.random() * alphabet.length)));
+				s1 = alphabet.charAt(Math.floor((Math.random() * alphabet.length)));
+				for(var i=0;i<l;i++){ s2 += alphabet.charAt(Math.floor((Math.random() * alphabet.length))); }
+				for(var i=0;i<l;i++){ s3 += alphabet.charAt(Math.floor((Math.random() * alphabet.length))); }
+				//console.log(s3);
+				return [s0,s1,s2,s3];
+			}
+
+			function stringCompareTest(){
+				var l=6, n=500000,data=[];
+				for(var i=0;i<n;i++){
+					data.push(stringsToCompare(l));
+				}
+				var t = debugTimer("String Comparison");
+				for(var i=0;i<n;i++){
+					data[i][0]===data[i][1];
+				}
+				t.lap("1 character");
+				for(var i=0;i<n;i++){
+					data[i][2]===data[i][3];
+				}
+				t.lap("5 characters");
+			}
+			stringCompareTest();*/
+
+		</script>
+		<!--<script src="./data/payloadb.js"></script>!-->
+	</body>
+</html>
