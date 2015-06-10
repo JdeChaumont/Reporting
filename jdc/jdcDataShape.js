@@ -43,7 +43,7 @@ function layoutMekko(data, getVal,sort){
         //e.x = (i>0 ? v(last)/ res.value : 0);
         e.x = i>0 ? (last.x + last['values'][0].dx) : 0;
         for(var f, j=0, b=e['values'], o=b.length; j<o; j+=1){ f = b[j];
-            f.series = e.seriesIndex;
+            f.seriesIndex = e.seriesIndex;
             var last = b[j-1];
             f.x = e.x;
             f.dx =  e.value;

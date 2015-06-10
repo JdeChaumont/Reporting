@@ -5,7 +5,7 @@ nv.models.mekko = function() {
   // Public Variables with Default Settings
   //------------------------------------------------------------
 
-  var margin = {top: 0, right: 0, bottom: 0, left: 0}
+  var margin = {top: 0, right: 0, bottom: 0, left: 0} // set for xCategory
     , width = 960
     , height = 500
     , id = Math.floor(Math.random() * 10000) //Create semi-unique ID in case user doesn't select one
@@ -47,10 +47,13 @@ nv.models.mekko = function() {
           var availableWidth = width - margin.left - margin.right,
               availableHeight = height - margin.top - margin.bottom,
               container = d3.select(this);
-
+        //console.log(availableWidth); console.log(availableHeight);
         data = layoutMekko(data)
         console.log(data);
 
+        // temp hack
+        barColor = function(d,i) { return palettes['mekko'][d.seriesIndex] }; // Test
+        //console.log(barColor);
       //------------------------------------------------------------
       // Setup Scales
 
@@ -73,10 +76,88 @@ nv.models.mekko = function() {
       var wrapEnter = wrap.enter().append('g').attr('class', 'nvd3 nv-wrap nv-multibarHorizontal');
       var gEnter = wrapEnter.append('g');
       var g = wrap.select('g');
-
       gEnter.append('g').attr('class', 'nv-groups');
-
       wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+      // New group to show horizontal values
+      var xCat = d3.select(this).selectAll('g.xCat-wrap').data([data]);
+      var xCatEnter = xCat.enter().append('g').attr('class','xCat-wrap');
+      xCat.attr('transform', 'translate(' + margin.left + ',0)'); // may configure
+      var xCatBar = xCat.selectAll('g.x-bar').data(function(d) { return d.values });
+      xCatBar.exit().remove();
+      var xCatBarEnter = xCatBar.enter().append('g')
+        .attr('class', 'x-bar')
+          .attr('transform', function(d,i) {
+              return 'translate(' + x0(ƒ('x')) + ',0)' // only move on x-axis
+          })
+          .style('stroke-opacity', 1)
+          .style('fill-opacity', .75);
+
+    var xCatBarHeight = (margin.top-10); // need to configure
+
+      xCatBarEnter.append('rect')
+        .attr('width', 0 )
+        .attr('height', 0 )
+        //.style('fill', function(d,i,j){ return color(d, i) }) //Moved here to change colour for each value
+        .style('stroke', function(d,i) { return '#fff'; });
+
+    xCatBarEnter.append('text');
+        xCatBar.select('text')
+            .attr('text-anchor', 'middle')
+            .attr('y', xCatBarHeight/2 )
+            .attr('dy', '.32em')
+            //.text(function(d,i) { return valueFormat(getY(d,i)) })
+            .style('stroke', function(d,i) { return '#fff'; })
+            .style('stroke-width', function(d,i) { return '0.8'; })
+            .text(function(d,i) { return d.display })
+        xCatBar.transition()
+          .select('text')
+            .attr('x', function(d,i) {  return  x(d.value/2) })
+        //20150119 must run after labels have been rendered
+        xCatBar.selectAll('text').style('opacity',function(d,i){ // console.log(this.getComputedTextLength()); console.log(x(d.value));
+            return (this.getComputedTextLength()>x(d.value) || (xCatBarHeight/2)<this.getBBox().height) ? 0 : 1;
+        });
+
+        if (barColor) {
+            xCatBar
+            .style('fill', function(d,i) { return barColor(d,i); });
+        }
+
+        xCatBar.transition()
+            .attr('transform', function(d,i) {
+              return 'translate(' + x(d.x) + ',0)'
+          })
+          .select('rect')
+            .attr('width', function(d){ return x(d.value); } )
+            .attr('height', function(d){ return xCatBarHeight; }  );
+
+            xCatBar
+                .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
+                  d3.select(this).classed('hover', true);
+                  dispatch.elementMouseover({
+                    value: d.value,
+                    point: d,
+                    series: data['values'][d.seriesIndex],
+                    pos: [ x(getX(d,i)), 0 ],
+                    pointIndex: i,
+                    seriesIndex: d.seriesIndex,
+                    e: d3.event,
+                    key : d.key,
+                    x : d.display,
+                    y : (d.value/data.value)
+                  });
+                })
+                .on('mouseout', function(d,i) {
+                  d3.select(this).classed('hover', false);
+                  dispatch.elementMouseout({
+                    value: d.value,
+                    point: d,
+                    series: data['values'][d.seriesIndex],
+                    pointIndex: i,
+                    seriesIndex: d.series,
+                    e: d3.event
+                  });
+                })
 
       //------------------------------------------------------------
 
@@ -93,7 +174,7 @@ nv.models.mekko = function() {
           .attr('class', function(d,i) { return 'nv-group nv-series-' + i })
           .classed('hover', function(d) { return d.hover })
           //.style('fill', function(d,i){ return color(d, i) })
-          .style('stroke', function(d,i){ return color(d, i) });
+          //.style('stroke', function(d,i){ return color(d, i) });
       groups.transition()
           .style('stroke-opacity', 1)
           .style('fill-opacity', .75);
@@ -113,7 +194,8 @@ nv.models.mekko = function() {
       barsEnter.append('rect')
           .attr('width', 0 )
           .attr('height', 0 )
-          .style('fill', function(d,i,j){ return color(d, i) }) //Moved here to change colour for each value
+          //.style('fill', function(d,i,j){ return color(d, i) }) //Moved here to change colour for each value
+          .style('stroke', function(d,i,j) { return '#fff'; });
 
       bars
           .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
@@ -121,11 +203,14 @@ nv.models.mekko = function() {
             dispatch.elementMouseover({
               value: d.value,
               point: d,
-              series: data['values'][d.series],
+              series: data['values'][d.seriesIndex],
               pos: [ x(getX(d,i)), y(getY(d,i)) ],
               pointIndex: i,
-              seriesIndex: d.series,
-              e: d3.event
+              seriesIndex: d.seriesIndex,
+              e: d3.event,
+              key : data['values'][d.seriesIndex].display,
+              x : d.display,
+              y : d.dy
             });
           })
           .on('mouseout', function(d,i) {
@@ -133,7 +218,7 @@ nv.models.mekko = function() {
             dispatch.elementMouseout({
               value: d.value,
               point: d,
-              series: data['values'][d.series],
+              series: data['values'][d.seriesIndex],
               pointIndex: i,
               seriesIndex: d.series,
               e: d3.event
@@ -143,10 +228,10 @@ nv.models.mekko = function() {
             dispatch.elementClick({
                 value: d.value,
                 point: d,
-                series: data['values'][d.series],
+                series: data['values'][d.seriesIndex],
                 pos: [ x(getX(d,i)), y(getY(d,i)) ],
                 pointIndex: i,
-                seriesIndex: d.series,
+                seriesIndex: d.seriesIndex,
                 e: d3.event
             });
             d3.event.stopPropagation();
@@ -155,10 +240,10 @@ nv.models.mekko = function() {
             dispatch.elementDblClick({
                 value: d.value,
                 point: d,
-                series: data['values'][d.series],
+                series: data['values'][d.seriesIndex],
                 pos: [ x(getX(d,i)), y(getY(d,i)) ],
                 pointIndex: i,
-                seriesIndex: d.series,
+                seriesIndex: d.seriesIndex,
                 e: d3.event
             });
             d3.event.stopPropagation();
@@ -170,7 +255,7 @@ nv.models.mekko = function() {
      if (showValues) { //20150119 added to provide labels
         bars.select('text')
             .attr('text-anchor', 'middle')
-            .attr('y', function(d,i) { return y(1-d.dy/2); } )
+            .attr('y',  function(d,i) { return y(1-d.dy/2);})
             .attr('dy', '.32em')
             //.text(function(d,i) { return valueFormat(getY(d,i)) })
             .text(function(d,i) { return d.display })
@@ -185,14 +270,27 @@ nv.models.mekko = function() {
         bars.selectAll('text').text('');
     }
 
-      if (barColor) {
+     /* if (barColor) {
         if (!disabled) disabled = data.map(function() { return true });
         bars
-          .style('fill', function(d,i,j) { return d3.rgb(barColor(d,i)).darker(  disabled.map(function(d,i) { return i }).filter(function(d,i){ return !disabled[i]  })[j]   ).toString(); })
-          .style('stroke', function(d,i,j) { return d3.rgb(barColor(d,i)).darker(  disabled.map(function(d,i) { return i }).filter(function(d,i){ return !disabled[i]  })[j]   ).toString(); });
+          .style('fill', function(d,i,j) { return d3.rgb(barColor(d,i)).darker(  disabled.map(function(d,i) { return i }).filter(function(d,i){ return !disabled[i]  })[i]   ).toString(); })
+          .style('stroke', function(d,i,j) { return d3.rgb(barColor(d,i)).darker(  disabled.map(function(d,i) { return i}).filter(function(d,i){ return !disabled[i]  })[i]   ).toString(); });
+      }*/
+
+      // Manage colur gradients - to be improved
+      var colourRange = 1;
+      if(data['values'][0]['values'].length>5){
+          colourRange = 2;
       }
 
-    console.log("initial state set");
+      if (barColor) {
+        bars
+          .style('fill', function(d,i,j) { /*console.log("Series Index: " + d.seriesIndex + " index: " + i + " Colour: " + d3.rgb(barColor(d,i)).brighter(i).toString());*/ return d3.rgb(barColor(d,i)).brighter(i/colourRange); })
+          //.style('stroke', function(d,i,j) { return d3.rgb(barColor(d,i)).brighter(i/colourRange); });
+          .style('stroke-width', 5)
+          .style('stroke', function(d,i,j) { return '#fff'; });
+      }
+
     bars.transition()
         .attr('transform', function(d,i) {
           return 'translate(' + x(d.x) + ',' + y(d.y+d.dy) + ')'
@@ -371,7 +469,7 @@ nv.models.mekkoChart = function() {
     , controls = nv.models.legend().height(30)
     ;
 
-  var margin = {top: 30, right: 20, bottom: 50, left: 60}
+  var margin = {top: 40, right: 20, bottom: 50, left: 60}
     , width = null
     , height = null
     , color = nv.utils.defaultColor()
@@ -379,9 +477,9 @@ nv.models.mekkoChart = function() {
     , showLegend = true
     , stacked = false
     , tooltips = true
-    , tooltip = function(key, x, y, e, graph) {
-        return '<h3>' + key + ' - ' + x + '</h3>' +
-               '<p>' + rptFmtN(e.value) + ' ('+ rptFmt(y).trim() + ')</p>'
+    , tooltip = function(e, graph) {
+        return '<h3>' + e.key + ' - ' + e.x + '</h3>' +
+               '<p>' + rptFmtN(e.value) + ' ('+ rptFmt(e.y).trim() + ')</p>'
       }
     , x //can be accessed via chart.xScale()
     , y //can be accessed via chart.yScale()
@@ -391,6 +489,7 @@ nv.models.mekkoChart = function() {
     , dispatch = d3.dispatch('tooltipShow', 'tooltipHide', 'stateChange', 'changeState')
     , controlWidth = function() { return showControls ? 180 : 0 }
     , transitionDuration = 250
+    , xCat = 40;
     ;
 
   multibar
@@ -420,9 +519,7 @@ nv.models.mekkoChart = function() {
     var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
         top = e.pos[1] + ( offsetElement.offsetTop || 0),
         //x = xAxis.tickFormat()(multibar.x()(e.point, e.pointIndex)),
-        x = e.point.display,
-        y = e.point.dy,
-        content = tooltip(e.series.key, x, y, e, chart);
+        content = tooltip(e, chart);
 
     nv.tooltip.show([left, top], content, e.value < 0 ? 'e' : 'w', null, offsetElement);
   };
@@ -439,7 +536,7 @@ nv.models.mekkoChart = function() {
                              - margin.left - margin.right,
           availableHeight = (height || parseInt(container.style('height')) || 400)
                              - margin.top - margin.bottom;
-
+        //console.log(availableWidth); console.log(availableHeight); console.log(container); console.log(container.style('width')); console.log(container.style('height'));
       chart.update = function() { container.transition().duration(transitionDuration).call(chart) };
       chart.container = this;
 
@@ -563,6 +660,7 @@ nv.models.mekkoChart = function() {
         .disabled(data.map(function(series) { return series.disabled }))
         .width(availableWidth)
         .height(availableHeight)
+        .margin( { 'top' : xCat } ) // display horizontal key
         .color(data.map(function(d,i) {
           return d.color || color(d, i);
         }).filter(function(d,i) { return !data[i].disabled }))
@@ -600,6 +698,8 @@ nv.models.mekkoChart = function() {
         .ticks( availableHeight / 24 )
         .tickSize(-availableWidth, 0);
 
+        g.select('.nv-y.nv-axis')
+            .attr('transform', 'translate(0,' + xCat + ')');
       g.select('.nv-y.nv-axis').transition()
           .call(yAxis);
 

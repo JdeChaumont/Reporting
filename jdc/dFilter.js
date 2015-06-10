@@ -460,14 +460,14 @@ function dFilter(options){
         function sumPopulation(){
             var obj, key, r;
             var tgtKey = measures.map(function(e,i,a) { var res = {}; res[o.tgt] = e; return res;  } ); // awful hack due to structure of vSelect
-            console.log(tgtKey);
-            for(var e, i=0, a=filter['population'], n=a.length; i<n; i+=1){ e = a[i]; // e is object
+            console.log(tgtKey); console.log(ret.filter['population'].length);
+            for(var e, i=0, a=ret.filter['population'], n=a.length; i<n; i+=1){ e = a[i]; // e is object
                 obj = o.data[e];
                 key = "";
                 for(var f, j=0, b=dims, p=b.length; j<p; j+=1){ f = b[j];
                     key = idString(key,ret.pAccessor(obj,f)); //String to use as key
                 }
-                for(var g, k=0, c=measures, q=c.length; k<q; k+=1){ g = c[k]; console.log(g);
+                for(var g, k=0, c=measures, q=c.length; k<q; k+=1){ g = c[k];
                     var val = ret.vAccessor(resObj[key]);
                     ret.vSum(val[g],ret.vSelect(ret.vAccessor(obj),tgtKey[k],o.tgt)); // changed tgtKey[k] to g from
                 }
@@ -489,7 +489,7 @@ function dFilter(options){
         function combinations(dims){
             var res = [];
             for(var e, i=0, a=dims, n=a.length; i<n; i+=1){ e = a[i];
-                res.push(ret.filter['indexes'][e]['range']);
+                res.push(ret.filters[0]['indexes'][e]['range']);
             }
             return res;
         }

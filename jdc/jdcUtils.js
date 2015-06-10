@@ -281,3 +281,8 @@ Array.prototype.stats = function(){
     return a - b;
   }
 }
+
+Array.prototype.last = function(){
+    if(this.length===0) return null;
+    return this[this.length-1];
+}

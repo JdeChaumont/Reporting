@@ -85,6 +85,7 @@ var anchorManager = function(){
 	}
 
 	ret.changeAnchorPart = function( argMap ) {
+		spinner.spin(); setTimeout(function(){spinner.stop();},1000); // spinner with 1 sec timer - would prefer not to have here
 		var anchorMapRevise = copyAnchorMap(), result = true, k, k_dep;
 		// Begin merge changes into anchor map
 		KEYVAL:
@@ -121,6 +122,7 @@ var anchorManager = function(){
 
 	// Need to consider sending state in as a parameter
 	ret.onHashchange = function( event ) {
+
 	    var anchorMapPrevious = copyAnchorMap(), anchorMapProposed, toggleCty = false;
 
 		// attempt to parse anchor
@@ -150,7 +152,6 @@ var anchorManager = function(){
 				e = false;
 			}
 		});
-
 	    return false;
 	};
 
@@ -211,6 +212,19 @@ var createDropdown = function(container,states,css,events){
 	dropdown = d3.selectAll(container).selectAll('select')
 		.attr("style","display:none");
 }
+
+/* var createDropdown = function(container,states,css,events){
+	var options = {
+		container : container,
+		type : '.wrapper-dropdown-1', //css?
+		events : { 'changed' : events.change },
+		label : 'Report: ',
+		values : states.map(function(e,i,a){ return e['name'];}),
+		map : states.map(function(e,i,a){ return e['value'];}),
+		initialValue : 0
+	}
+	var dropdown = new DropDown(options);
+}*/
 
 //*******************************************************************************
 //Step 1 - Add Buttons to Page Structure

@@ -1,14 +1,13 @@
 //*******************************************************************************
-// Dimension Filter
+// Mekko Chart Manager
 //*******************************************************************************
-//
 function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
     // Preliminary items - defaults - call base function
     var defaults = {
         state : state,
         palette : palettes['tarnish20'],
         valueFormat : rptFmtN,
-        margin : {top: 10, right: 10, bottom: 30, left: 80},
+        margin : {top: 30, right: 10, bottom: 30, left: 30},
         showValues : true,
         transitionDuration : 250,
         showControls : false,
@@ -21,11 +20,10 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
     var o = ret.options = extend(defaults,options); // merge defaults and options
     var chart  = ret.chart;
     var chartData = ret.chartData;
-    var currentFilter = ret.filter;
-    var filterCache = [];
-    var filterChain = [];
     var filter;
     var expanded = false;
+    var chartCreated = false;
+    ret.dims = {};
 
     ret.expanded = function(){
         expanded=!expanded;
@@ -36,10 +34,10 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
     ret.init = function(options){
         // Process dims
         orderDims();
-        // need to hook up to state object - create properties and values
-        filter = filterCache[0] = o.source.filter;
-        var data = filter['aggregate'];
+        var data = o.source.filter['aggregate']; //console.log(data);
         o.dims.forEach(function(e,i,a){
+            ret.dims[e['name']] = i; // from dFilter but not using "val"
+            ret.dims[i] = e['name']; //ordered map
             e['range'] = {}; // add range to dims
             var id = e['name'];
             var dim = data[id];
@@ -48,11 +46,9 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
                 vals.push(d); // put range of values
                 e['range'][d] = (vals.length-1); // add range to put index for stateFilter
             }
-            stateFilter(o.state,id,vals); // create stateFilter for each dim - do not need map and handlers
+            // stateFilter(o.state,id,vals); // create stateFilter for each dim - do not need map and handlers
         });
-        state.addHandler(0,filterUpdate); // add handler to state object - fired for all anchor changes
-        ret.chartData = reshapeFilterData(data);
-        createChart();
+        // state.addHandler(7,filterUpdate); // add handler to state object - fired for all anchor changes - NOT NECESSARY FOR MEKKO
         return ret;
     }
 
@@ -60,103 +56,28 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
             return ret.update;
     }
 
-    // general purpose entry point for filter  - to be renamed to xFilter (xFilter to oneFilter or fastFilter)
-    ret.xFilter = function(key){ // key sourced from state manager
-        var t = debugTimer("dDimFillter.xFilter");
-        var delta={}, count=0, filtered=false, d, dim, v, s, value, selected = {};
-        if(key){
-            o.dims.forEach(function(e,i,a){ //console.log(e);
-                d = e['name'];
-                v = key[d];
-                s = filter['selected'][d];
-                selected[d] = s; // get currently selected value
-                if(v){
-                    if(v!==s){ // filtered value has changed
-                        count++; console.log("v:"+v+";s:"+s);
-                        dim = d; // store selected dim
-                        value = v; // store selected value
-                        delta[d] = v; // capture changes
-                        selected[d] = v;  // update selected
-                    }
-                }
-                if(selected[d]!==o.all){
-                    filtered=true;
-                }
-            });
-        }
-        t.lap("key parsed");
-        if(count===0){ // THIS HAS BECOME REALLY HORRIBLE AND NEEDS TO BE REVIEWED - POSSIBLY MOVED TO FILTER
-            // do nothing
-        } else if((!key&&filterCache.length>1)||(count>0&&filtered===false)){ // reset to no filter
-            filterCache = filterCache.slice(0,1);
-            filterChain = [];
-            o.source.reset();
-        } else if(count===1){ // one dim has changed
-            var lastFilter = (dim===filterChain[filterChain.length-1]); //alert("dim:"+dim+"; FilterChain[Last]:"+filterChain[filterChain.length-1]+"; Value:"+value);
-            var filterValueSelected = (value!==o.all);
-            if(filterChain.length>0&&lastFilter===true){  // toggle off last dim
-                filterCache.pop();
-                filterChain.pop();
-                filter=filterCache[filterCache.length-1];
-                o.source.reset(filter);
-                if(filterValueSelected===true){ // Dim has been changed to a filtered value
-                    filterCache.push(o.source.xFilter(filter,dim,value)); // add new dim JSON.parse(JSON.stringify(o.source.filter));
-                    filterChain.push(dim);
-                }
-            } else if(filterValueSelected===true) { // filter has selected
-                if(filterChain.indexOf(dim)>0){ // check not existing filter
-                    filterCache = filterCache.slice(0,1);
-                    filterChain = [];
-                    filterCache.push(o.source.xFilter(filter,selected)); //reset
-                } else {
-                    filterCache.push(o.source.xFilter(filter,dim,value)); // add new dim JSON.parse(JSON.stringify(o.source.filter));
-                    filterChain.push(dim);
-                }
-            } else {
-                filterCache = filterCache.slice(0,1);
-                filterChain = [];
-                filterCache.push(o.source.xFilter(filter,selected)); //reset
-            }
-        } else { //multiple changed - recalculate filter
-            filterCache = filterCache.slice(0,1);
-            filterChain = [];
-            filterCache.push(o.source.xFilter(filter,selected)); //reset
-        }
-        t.lap("cache updated");
-        filter = filterCache[filterCache.length-1];
-        return filter['aggregate'];
+    ret.getCurrentFilter = function(){
+        //go to filterSelectors - should set these on initalisation
+        return o.filter.map(function(e,i,a) { console.log(e()); return f(e); } );
     }
 
     // function to requery and update
-    ret.reset = function(){
-        var update = {};
-        o.dims.forEach(function(e,i,a){
-            console.log(i); console.log(e); console.log(o.state[e['name']]());
-            if(o.state[e['name']]()!=='_'){
-                update[e['name']] = 0; // get values from state - dims have been attached
-            }
-        });
-        anchor.changeAnchorPart(update);
-    }
-    // function to requery and update
-    ret.back = function(){
-        var update = {};
-        update[filterChain[filterChain.length-1]] = 0;
-        anchor.changeAnchorPart(update);
-    }
-
-    // function to requery and update
-    ret.update = function(){
+    ret.update = function(){ // return 0;
         // function to update - called from state manager
-        var key = {};
-        o.dims.forEach(function(e,i,a){
-            key[e['name']] = o.state[e['name']]()||'_'; // get values from state - dims have been attached
-        });
-        ret.chartData = reshapeFilterData(ret.xFilter(key));
-        d3.select(o.container)
-            .datum(ret.chartData)
-            .transition().duration(300)
-            .call(ret.chart);
+        filter = ret.getCurrentFilter(); console.log(filter);
+        data = o.source.groupBy(filter); //console.log(data);
+        ret.chartData = reshapeFilterData(data); //console.log(ret.chartData);
+        if(filter.filter(function(e,i,a) { return i==filter.lastIndexOf(e); }).length===filter.length){
+            if(chartCreated===false){
+                createChart();
+                chartCreated===true;
+            } else {
+                d3.select(o.container)
+                    .datum(ret.chartData)
+                    .transition().duration(300)
+                    .call(ret.chart);
+            }
+        }
         return ret;
     }
 
@@ -167,7 +88,7 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
                 if(typeof e['order']!=="string"){ // ordered array
                     e['dimOrder'] = {};
                     e['order'].forEach(function(f,j,k){
-                        v =  (o.dimsEncoded&&o.dimsEncoded[e['name']]) ? o.dimsEncoded[e['name']]['values'][f] || f : f;
+                        v =  encode(e['name'],f);
                         e['dimOrder'][v] = j;
                     });
                 }
@@ -175,52 +96,58 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
         });
     }
 
-    // Reshape output from filter to work in bar chart
-    function reshapeFilterData(data){
-        var p,d,ord,sort,res = [], s = {}, filtered = {};
-        // Establish filtered dimensions for highlighting
-        for(var k in filter['selected']){
-            if(filter['selected'][k]!==o.all){ filtered[k] = true; }
-        }
-        o.dims.forEach(function(e,i,a){
-            var dim, ordered = [], unordered = [];
-            if(expanded||!e['hide']){ // New condition to ignore hidden dims
-                dim = data[e['name']];
-                if(e['order']&&(typeof e['order']==="string")) {
-                    sort = e['order'];
-                } else{
-                    sort = null;
+    function reshapeToNestedArrays(data){
+        var res = [], node, tree = {}, d;
+        for(var e, i=0, a=data, n=a.length; i<n; i+=1){ e = a[i]; // e is object
+            node = tree;
+            for(var f, j=0, b=filter, p=b.length; j<p; j+=1){ f = b[j]; // selected dimensions
+                d = e[f];
+                if(!node[d]){
+                    node[d] = {};
                 }
-                s = { 'key':e['display']||e.name, 'dim' : e.name, 'values':[], 'sort' : sort };
-                ord = e['dimOrder'];
-                for(d in dim){ //could push and then order
-                    p = { 'label' : d, 'index' : e['range'][d],'value' : dim[d]['sum'][def.u()][def.c()] }; // NEEDS TO CHANGE HARD CODED INDEX
-                    p['display'] = (o.dimsEncoded&&o.dimsEncoded[e['name']]) ? o.dimsEncoded[e['name']]['encoded'][d]||d : d;
-                    if(p['value']>0&&filtered[e.name]) { p['filtered']=true; }
-                    if(ord&&ord[d]>=0){ // 0 was being evaluated as not found
-                        ordered[ord[d]] = p;
-                    } else {
-                        unordered.push(p);
-                    }
-                }
-                s['values'] = ordered.concat(unordered);
-                if(e["colours"]){
-                    s['values'].forEach(function(f,j,b){
-                        f['color']=e.colours[j];
-                    });
-                }
-                res.push(s);
+                node = node[d];
             }
-        });
+            node['values'] = e['values'];
+            node['value'] = e['values'][def.u()][def.c()]; // should be parameterised
+        }
+        return tree;
+    }
+
+    function orderData(data,level){
+        var res, ordered = [], unordered = [];
+        var dim = filter[level];
+        var e = o.dims[ret.dims[filter[level]]];
+        var ord = e['dimOrder'];
+        for(var d in data){
+            var l = level;
+            var s = { 'key' : dim,  'label' : d, 'display' : decode(dim,d), 'index' : e['range'][d] , 'value' : data[d]['value'] || 0 };
+            if(!data[d]['values']) { s['values'] = data[d]['values'] || orderData(data[d],++l); }
+            if(ord&&ord[d]>=0){ // 0 was being evaluated as not found
+                ordered[ord[d]] = s;
+            } else {
+                unordered.push(s);
+            }
+            res = ordered.concat(unordered);
+            if(e["colours"]){
+                res.forEach(function(f,j,b){
+                    f['color']=e.colours[j];
+                });
+            }
+        }
         return res;
     }
 
-    // get new filter from state
-    // compare with existing filter
-    // if no difference - do nothing
-    // if one difference  - re-run filter
-    //
-    // else reset
+    function decode(dim,val){
+        return (o.dimsEncoded&&o.dimsEncoded[dim]) ? o.dimsEncoded[dim]['encoded'][val]||val : val;
+    }
+
+    function encode(dim,val){
+        return (o.dimsEncoded&&o.dimsEncoded[dim]) ? o.dimsEncoded[dim]['values'][val]||val : val;
+    }
+
+    function reshapeFilterData(data){
+        return orderData(reshapeToNestedArrays(data),0);
+    }
 
     function createChart(){
         nv.addGraph(function() {
@@ -251,7 +178,7 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
                 anchor.changeAnchorPart(update);
             });
 
-            console.log(ret.chartData);
+            //console.log(ret.chartData);
 
             d3.select(o.container)
                 .datum(ret.chartData)
@@ -265,75 +192,4 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
         });
     }
     return ret.init(o);
-}
-
-function stateFilter(stateObj,id,states,map,handlers){ //code should be segmented
-    var values = {}, schema = {}, selectors = [], s = stateObj || state, h = "stateHandlers", refNo;
-
-    selectors = states.map(function(e,i,a){
-        values[i] = map ? map[i] : e;
-        schema[i] = true;
-        return { name : e , value : i };
-    });
-
-    refNo  = s.addControl(id,values,schema,stateProperty); // no default control handler required
-
-    if(handlers){
-        handlers.forEach(function(e,i,a){ stateObj.addHandler(refNo,e); });
-    }
-    return refNo; //not sure there is any need to return an object
-}
-
-/* Format of objects passed in...
-    state : <?> //should we hook up handlers directly
-    source : <filter> //not provider
-    container : "",
-    dims :
-        [
-            {
-                dim : <dim1>,
-                display : '',
-                order : < null, 'asc', 'desc', [<val1>,<val2>...],
-                colours : paletteSelect(palette,reverse)
-            }
-        ]
-
-*/
-
-var palettes = {};
-//palettes['portfolio'] = { 'HL' : '#f58025', 'BTL' : '#221f73', 'CRE' : '#006393', 'SB' : '#777777', 'UNS' : '#333333', 'CHL' : '#0091bf'};
-palettes['portfolio'] = ['#f58025', '#221f73', '#006393', '#777777', '#333333', '#0091bf'];
-palettes['default'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['orange'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['blue'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['RAG'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['red'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['binary'] = ["#99000d","#989898"];
-palettes['tarnish20'] = ["#3C4244",
-"#D2C1C2",
-"#83817E",
-"#A6BCC3",
-"#556469",
-"#95929D",
-"#726B78",
-"#AEACBB",
-"#544953",
-"#BBBBB3",
-"#707E84",
-"#CBC5D1",
-"#CBB7AE",
-"#949999",
-"#696D6E",
-"#C3C5C8",
-"#7C8A8E",
-"#686770",
-"#C4BBB2",
-"#596164"];
-palettes['shades20'] =["#D4E2B2","#2F271B","#8F8E8B","#BCA377","#F2F7E8","#FCD2A3","#B9BFB5","#8DA286","#B1B98D","#B4A795","#EEEBA9",
-"#E9DCB7","#F3F8D6","#ACC8A3","#CBD8C8","#CAA383","#E9E2D5","#A6BAB1","#D4EBBF","#C5AF7C"];
-palettes['regions'] = ["#395692","#91B2D9","#2F699D","#915B5B","#CC7F80","#4B564E","#9DB8A4","#5A4C4C"];
-var paletteSelector = function(palette,reverse){
-    return function(e,i){
-            return palette[e]?palette[e]:palette[(reverse?palette.length-i:i)];
-    }
 }

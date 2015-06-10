@@ -116,7 +116,7 @@ g .active {
 .rptTitleBorder {
     padding:0;
     border-bottom-style:solid;
-    border-bottom-color:#ff9900;
+    border-bottom-color:#555;
     border-width:3px
 }
 

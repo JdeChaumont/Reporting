@@ -38,7 +38,7 @@ function dDimFilter(options){ // wraps customised nvd3 horizontal bar chart
         orderDims();
         // need to hook up to state object - create properties and values
         filter = filterCache[0] = o.source.filter;
-        var data = filter['aggregate'];
+        var data = filter['aggregate']; console.log(data);
         o.dims.forEach(function(e,i,a){
             e['range'] = {}; // add range to dims
             var id = e['name'];
@@ -301,37 +301,22 @@ function stateFilter(stateObj,id,states,map,handlers){ //code should be segmente
 var palettes = {};
 //palettes['portfolio'] = { 'HL' : '#f58025', 'BTL' : '#221f73', 'CRE' : '#006393', 'SB' : '#777777', 'UNS' : '#333333', 'CHL' : '#0091bf'};
 palettes['portfolio'] = ['#f58025', '#221f73', '#006393', '#777777', '#333333', '#0091bf'];
-palettes['default'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['orange'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['blue'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['RAG'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['red'] = ['#999990','#999991','#999992','#999993','#999994','#999995','#999996','#999997','#999998','#999999','#99999A','#99999B'];
-palettes['binary'] = ["#99000d","#989898"];
-palettes['tarnish20'] = ["#3C4244",
-"#D2C1C2",
-"#83817E",
-"#A6BCC3",
-"#556469",
-"#95929D",
-"#726B78",
-"#AEACBB",
-"#544953",
-"#BBBBB3",
-"#707E84",
-"#CBC5D1",
-"#CBB7AE",
-"#949999",
-"#696D6E",
-"#C3C5C8",
-"#7C8A8E",
-"#686770",
-"#C4BBB2",
-"#596164"];
+//palettes['binary'] = ["#99000d","#989898"];
+palettes['binary'] = ["#08306b","#6baed6"];
+palettes['tarnish20'] = ["#3C4244","#D2C1C2","#83817E","#A6BCC3","#556469","#95929D","#726B78","#AEACBB","#544953","#BBBBB3","#707E84","#CBC5D1","#CBB7AE","#949999","#696D6E","#C3C5C8","#7C8A8E","#686770","#C4BBB2","#596164"];
 palettes['shades20'] =["#D4E2B2","#2F271B","#8F8E8B","#BCA377","#F2F7E8","#FCD2A3","#B9BFB5","#8DA286","#B1B98D","#B4A795","#EEEBA9",
 "#E9DCB7","#F3F8D6","#ACC8A3","#CBD8C8","#CAA383","#E9E2D5","#A6BAB1","#D4EBBF","#C5AF7C"];
 palettes['regions'] = ["#395692","#91B2D9","#2F699D","#915B5B","#CC7F80","#4B564E","#9DB8A4","#5A4C4C"];
+palettes['mekkoA'] = createMekkoColours(['Oranges','Blues','Greys','Reds','Greens','Purples','Set1','Set2','Set3','Pastel1','Pastel2'], colorbrewer, 8, 7);
+palettes['mekko'] = ['#001144','#202020','#440000','#004400','#110044','#004444','#440011','#000044','#444400','#440044','#114400','#441100'];
 var paletteSelector = function(palette,reverse){
     return function(e,i){
             return palette[e]?palette[e]:palette[(reverse?palette.length-i:i)];
     }
+}
+
+function createMekkoColours(colours,source,range,index){
+    return colours.map(function(e,i,a){
+        return source[e][range][index];
+    });
 }

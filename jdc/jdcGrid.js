@@ -403,15 +403,9 @@ function updatePopupChart(dim){
 	var chart = popupChart.graph;
 	var dimName = dataDims[dim];
 	console.log('updatePopupChart ' + dim);
-	/*//var range = pxf.dims[dim].range;
-	var range = pxf.indexes[dim].range;
-	var key = $.extend( true, {}, chart.key);
-	if(f(chart.key[dimName])!=='_'){ //dimension must not already be filtered
-		return '';
-	}*/
 	//Check dim is and aggregate
 	//iterate through key and change if displayNames exists
-	var data = pxf.segmentSubAnalyse(chart.key,[0,def.c()+1],dimName);
+	var data = pxf.segmentSubAnalyse(chart.key,[0,def.c()+1],dimName); console.log(data); console.log(displayNames);
 	var data1 = data.map(function(e,i,a){
 		if(displayNames&&displayNames[dimName]){
 			e.key = displayNames[dimName][e.key] || e.key;
