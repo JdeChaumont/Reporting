@@ -3,6 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Portfolio</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
 		<link href="css/nv.d3.min.css" type="text/css" rel="stylesheet">
 		<link rel="stylesheet" type="text/css" href="css/bootstrap-select.min.css" />
@@ -11,7 +12,7 @@
 		<link rel="stylesheet" type="text/css" href="css/jdcGrid.min.css" />
 		<link rel="stylesheet" type="text/css" href="css/ptsb.css" />
 		<link rel="stylesheet" type="text/css" href="css/dropdown.css" />
-		<link rel="stylesheet" type="text/css" href="css/page.css" />
+		<link rel="stylesheet" type="text/css" href="css/portfolio.css" />
 		<!--css><!-->
 		<!--><css!-->
 	</head>
@@ -189,8 +190,6 @@
 		  </div><!-- /.modal-dialog -->
 		</div><!-- /.modal -->
 
-		<script> var spinner; </script>
-
 		<script src="./lib/jquery-1.10.2.min.js"></script>
 		<script src="./lib/jquery.uriAnchor.js"></script>
 		<script src="./lib/bootstrap.min.js"></script>
@@ -204,24 +203,24 @@
 		<script src="./lib/pako.min.js"></script>
 		<script src="./lib/spin.min.js"></script>
 
-		<script src="./libCust/nv_d3_horiz_stacked_bar.js"></script>
-		<script src="./libCust/nv_d3_mekko.js"></script>
-		<script src="./libCust/dropdown.js"></script>
+		<script src="./js/nv_d3_horiz_stacked_bar.js"></script>
+		<script src="./js/nv_d3_mekko.js"></script>
+		<script src="./js/dropdown.js"></script>
 
-		<script src="./jdc/jdcUtils.js"></script>
-		<script src="./jdc/jdcState.js"></script>
-		<script src="./jdc/dFilter.js"></script>
-		<script src="./jdc/dProvider.js"></script>
-		<script src="./jdc/jdcGrid.js"></script>
-		<script src="./jdc/dDimFilter.js"></script>
-		<script src="./jdc/grids.js"></script>
-		<script src="./jdc/jdcDataShape.js"></script>
-		<script src="./jdc/dDimMekko.js"></script>
+		<script src="./js/dUtils.js"></script>
+		<script src="./js/dState.js"></script>
+		<script src="./js/dFilter.js"></script>
+		<script src="./js/dProvider.js"></script>
+		<script src="./js/dGrid.js"></script>
+		<script src="./js/dDataShape.js"></script>
+		<script src="./js/dDimFilter.js"></script>
+		<script src="./js/dDimMekko.js"></script>
 
-		<script src="./libCust/reportConfig.js"></script>
-		<script src="./libCust/page.js"></script>
+		<script src="./js/portfolioGrids.js"></script>
+		<script src="./js/portfolioConfig.js"></script>
+		<script src="./js/portfolio.js"></script>
 
-		<script src="./data/payloadc.js"></script>
+		<script src="./data/payloadc_201503.js"></script>
 
 		<script>
 			eval(pako.inflate(window.atob(payLoadData), { to: 'string' }));

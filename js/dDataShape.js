@@ -1,15 +1,15 @@
 
 function layoutStack(data, getY, getX){
-    data.forEach(function(e,i,a){
-      return stackLoop(e.values, e.key, getY, getX, e.sort);
+    data.forEach(function(e,i,a){ // console.log(data);
+      e.value =  stackLoop(e.values, e.key, getY, getX, e.sort);
     });
 
     /***********************************************************************************/
     /* Function to add stacked coordinates to array of data points data - note on stacks a single array */
     /* usage would be data.values = stack(data.values); */
     function stackLoop(data, series, getY, getX, sort){ //version where data is transformed - therefore mutable
-        var y = getY || function(d){ return d.y; }
-        , x = getX || function(d){ return d.x; };
+        // console.log(data);
+        var y = getY || function(d){ return d.y; }, x = getX || function(d){ return d.x; }, sum = 0;
         if(sort){
             data.sort(function(a,b){ return sort==='desc' ? y(b) - y(a) : y(a) - y(b); })
         }
@@ -19,7 +19,9 @@ function layoutStack(data, getY, getX){
             if(!e.y){ e.y = y(e); } //create y if not already present
             e.y0 = (i>0 ? a[i-1].y + a[i-1].y0 : 0);
             e.y1 = (i>0 ? a[i-1].y + a[i-1].y1 : 0);
+            sum+=e.y;
         }
+        return sum;
     }
 
 }

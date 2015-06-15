@@ -171,9 +171,9 @@ function jdcGrid(o){
 		{
 			var c = ret.cells[i];
 			if(c.key){
-				console.log(c.key);
+				//console.log(c.key);
 				c.data = c.format(c.type(ret.options.source.segment(c.key,c.index))); //need to sum response
-				console.log(c.data);
+				//console.log(c.data);
 				res.push({id : c.ref, val : c.data });
 			}
 		}
@@ -184,18 +184,18 @@ function jdcGrid(o){
 		var res = [];
 		// Default Array
 		for(var c, i=0,a=ret.pages['_'],n=a.length; i<n; i++) { c = a[i];
-			if(c.key){ console.log(c.key);
+			if(c.key){ //console.log(c.key);
 				c.data = c.format(c.type(ret.options.source.segment(c.key,c.index))); //need to sum response
-				console.log(c.data);
+				//console.log(c.data);
 				res.push({id : c.ref, val : c.data });
 			}
 		}
 		// Active page
-		if(o.pageCtrl){ console.log(o.pageCtrl())
+		if(o.pageCtrl){ //console.log(o.pageCtrl())
 			for(var c, i=0,a=ret.pages[o.pageCtrl()],n=a.length; i<n; i++) { c = a[i];
 				if(c.key){ //console.log(c.key);
 					c.data = c.format(c.type(ret.options.source.segment(c.key,c.index))); //need to sum response
-					console.log(c.data);
+					//console.log(c.data);
 					res.push({id : c.ref, val : c.data });
 				}
 			}
@@ -402,10 +402,10 @@ function pouDisplay(index,monthFormat){
 function updatePopupChart(dim){
 	var chart = popupChart.graph;
 	var dimName = dataDims[dim];
-	console.log('updatePopupChart ' + dim);
+	//console.log('updatePopupChart ' + dim);
 	//Check dim is and aggregate
 	//iterate through key and change if displayNames exists
-	var data = pxf.segmentSubAnalyse(chart.key,[0,def.c()+1],dimName); console.log(data); console.log(displayNames);
+	var data = pxf.segmentSubAnalyse(chart.key,[0,def.c()+1],dimName); //console.log(data); console.log(displayNames);
 	var data1 = data.map(function(e,i,a){
 		if(displayNames&&displayNames[dimName]){
 			e.key = displayNames[dimName][e.key] || e.key;

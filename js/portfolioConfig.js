@@ -1,9 +1,9 @@
 //var periods = periodsCreate(201201,35);
-var periods = { mth : [201312,201412], ndx : { 201312 : 0, 201412 : 1}};
+var periods = { mth : [201312,201412,201503], ndx : { 201312 : 0, 201412 : 1, 201503 : 2}};
 console.log(periods);
 
 var dims = {
-    "dpd":{"display":"DPD","value":0},
+    "dpd":{"display":"Arrears","value":0},
     "forborne":{"display":"Forborne","value":1},
     "secured":{"display":"Secured","value":2},
     "mre":{"display":"Measure","value":3},
@@ -14,15 +14,16 @@ var dims = {
     "sec_ctry":{"display":"Country (sec)","value":8},
     "region":{"display":"Region (sec)","value":9},
     "loan_size_band":{"display":"Loan Size","value":10},
-    "dpd_band":{"display":"DPD (detail)","value":11},
-    "ltv_band":{"display":"LTV Band","value":12},
+    "dpd_band":{"display":"Arrs (detail)","value":11},
+    "ltv_band":{"display":"iLTV Band","value":12},
     "orig_band":{"display":"Vintage","value":13},
     "npl":{"display":"NPL","value":14},
     "defaulted":{"display":"Default","value":15},
     "impaired":{"display":"Impaired","value":16},
     "neg_eq":{"display":"Neg. Eq.","value":17},
     "int_rate_type":{"display":"Rate Type","value":18},
-    "fb":{"display":"Forb. Type","value":19}
+    "fb":{"display":"Forb. Type","value":19},
+    "sale":{"display":"Sale Agreed","value":20},
     };
 
 var mres = {
@@ -57,7 +58,8 @@ var dimOrder = {
     "impaired":["Y","N"],
     "neg_eq":["Y","N"],
     "int_rate_type":["Tracker","Variable","Fixed"],
-    "fb":["No","Term extension","Capitalisation","Hybrid",">I/O","I/O","<I/O","Split","Zero","Other"].reverse()
+    "fb":["No","Term extension","Capitalisation","Hybrid",">I/O","I/O","<I/O","Split","Zero","Other"].reverse(),
+    "sale":["N","Y"]
 }
 
 //Buttons for popup chart - NEED to change so updates from dataDims names
@@ -91,6 +93,7 @@ var filterDimsOld = [
 var filterDimsNew = {
         "prt" : { "colours":null, 'hide' : true },
         "ent" : { "colours":palettes['binary'].slice(0)},
+        "sale" : { "colours":palettes['binary'].slice(0) },
         "sector" : {"colours":null},
         "region" : {"colours":null},
         "repay_type" : {"colours":null},
@@ -111,6 +114,7 @@ var filterDimsNew = {
 var filterDims = [
     'prt',
     'ent',
+    'sale',
     'sector',
     'region',
     'repay_type',
@@ -138,6 +142,7 @@ var filterDims = [
 var mekkoDims = [
     'prt',
     'ent',
+    'sale',
     'sector',
     'region',
     'repay_type',

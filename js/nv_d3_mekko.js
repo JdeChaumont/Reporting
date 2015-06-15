@@ -49,10 +49,10 @@ nv.models.mekko = function() {
               container = d3.select(this);
         //console.log(availableWidth); console.log(availableHeight);
         data = layoutMekko(data)
-        console.log(data);
+        //console.log(data);
 
         // temp hack
-        barColor = function(d,i) { return palettes['mekko'][d.seriesIndex] }; // Test
+        barColor = function(d,i) { return palettes['mekko'][d.seriesIndex % palettes['mekko'].length] }; // Test
         //console.log(barColor);
       //------------------------------------------------------------
       // Setup Scales

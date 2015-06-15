@@ -38,7 +38,7 @@ function dDimFilter(options){ // wraps customised nvd3 horizontal bar chart
         orderDims();
         // need to hook up to state object - create properties and values
         filter = filterCache[0] = o.source.filter;
-        var data = filter['aggregate']; console.log(data);
+        var data = filter['aggregate']; //console.log(data);
         o.dims.forEach(function(e,i,a){
             e['range'] = {}; // add range to dims
             var id = e['name'];
@@ -72,7 +72,7 @@ function dDimFilter(options){ // wraps customised nvd3 horizontal bar chart
                 selected[d] = s; // get currently selected value
                 if(v){
                     if(v!==s){ // filtered value has changed
-                        count++; console.log("v:"+v+";s:"+s);
+                        count++; //console.log("v:"+v+";s:"+s);
                         dim = d; // store selected dim
                         value = v; // store selected value
                         delta[d] = v; // capture changes
@@ -131,7 +131,7 @@ function dDimFilter(options){ // wraps customised nvd3 horizontal bar chart
     ret.reset = function(){
         var update = {};
         o.dims.forEach(function(e,i,a){
-            console.log(i); console.log(e); console.log(o.state[e['name']]());
+            //console.log(i); console.log(e); console.log(o.state[e['name']]());
             if(o.state[e['name']]()!=='_'){
                 update[e['name']] = 0; // get values from state - dims have been attached
             }
@@ -203,7 +203,7 @@ function dDimFilter(options){ // wraps customised nvd3 horizontal bar chart
                         unordered.push(p);
                     }
                 }
-                s['values'] = ordered.concat(unordered);
+                s['values'] = ordered.concat(unordered).filter(function(e,i,a){ return e !== undefined });
                 if(e["colours"]){
                     s['values'].forEach(function(f,j,b){
                         f['color']=e.colours[j];

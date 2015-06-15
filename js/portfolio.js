@@ -107,6 +107,8 @@ function loadReport(){
     $(".splash").slideUp('slow');
 
     dataNew = payLoad(); // console.log(dataNew);
+    //console.log(dataNew);
+    //console.log(dataNew.data[0]);
 
     //*******************************************************************************
     // Create User Interface
@@ -139,7 +141,7 @@ function loadReport(){
     // Back to UI creation
     //*******************************************************************************
     var rptPortfolio = stateElement(state, "prt", css,["All","HL","BTL","Commercial","CHL","IoM","Consumer"],["_","d","a","c","b","e","f"],null,0,[0,4,1,3,2,5,6]);
-    var rptPeriod = stateElement(state, "rptPeriod", cssBtnSm,["2013","2014"],[0,1],null,1);
+    var rptPeriod = stateElement(state, "rptPeriod", cssBtnSm,["2013","2014","Q1 2015"],[0,1,2],null,2);
     var rptUOM = stateElement(state, "uom", cssBtnSm,["€", "#"],['bal','count']);
 
     //*******************************************************************************
@@ -147,18 +149,32 @@ function loadReport(){
     //*******************************************************************************
     dataDims = dataNew['dims'];
     dataDims = ['mre'].concat(dataDims); // Hack to add here - could check for tgt in dProvider and add there
+    dimsEncoded = dataNew['dimsEncoded'];
+    console.log(JSON.stringify(dimsEncoded));
 
-    var dpdMap = { "a":"UTD", "b":">0", "d":">30", "f":">30" };
+    //var dpdMap = { "g":"UTD", "a":">0", "c":">30", "e":">30" };  // VERY BRITTLE - USES ENCODED WHICH CHANGE - CHANGED BELOW
+    var dpdMap = encodeValueMap('dpd_band',{ "UTD":"UTD", "0-30":">0", "30-60":">30", "60-90":">30" });
     var dimsToAddToFilter = [
         { 'name' : 'dpd', 'derivedFrom' : 'dpd_band', 'grpFn' : grpCategories(dpdMap,">90") },
-        { 'name' : 'forborne', 'derivedFrom' : 'fb', 'grpFn' : grpCategories({ "a":"N"},"Y") },
+        { 'name' : 'forborne', 'derivedFrom' : 'fb', 'grpFn' : grpCategories({ "b":"N"},"Y") },
         { 'name' : 'secured', 'derivedFrom' : 'ltv_band', 'grpFn' : grpCategories({ "f":"N","g":"N"},"Y") },
     ];
     dataDims = ['dpd','forborne','secured'].concat(dataDims);
     // console.log(dataDims);
 
-    dimsEncoded = dataNew['dimsEncoded'];
-    console.log(JSON.stringify(dimsEncoded));
+    // Helper functions to help with encoded/decoding
+    function encodeValueMap(dim, valueMap){
+        var ret = {};
+        for(var k in valueMap){
+            if(dimsEncoded[dim]){
+                var mappedValue = dimsEncoded[dim]['values'][k];
+                if(mappedValue) {
+                    ret[mappedValue] = valueMap[k];
+                }
+            }
+        }
+        return ret;
+    }
 
     //*******************************************************************************
     // Helper Functions to print out dims and measures
@@ -229,7 +245,7 @@ function loadReport(){
         'cubes' : [['prt','ent','sector','repay_type','int_rate_type']],
         'measures' : ['count','bal','arrs','prv','ew_DiA','ew_iLTV','ew_int_rate','ew_rem_term','ew_TOB']
         });
-    console.log(dbData);
+    //console.log(dbData);
     pxf = dProviderArray({ 'dims' : dataDims, 'src' : [{"id" : "_", "data" : dbData }], 'periods' : numPeriods});
 
     //*******************************************************************************
@@ -246,7 +262,7 @@ function loadReport(){
     }
 
     var mainFilter = dDimFilter(filterOptions);
-    console.log(mainFilter);
+    //console.log(mainFilter);
 
     // Button Functionality for dDimFilter - to go into dDimFilter
     var resetGraph = d3.selectAll(".reset")
@@ -392,7 +408,7 @@ function loadReport(){
     }
 
     var mekko = dDimMekko(mekkoOptions);
-    console.log(mekko);
+    //console.log(mekko);
 
     var rptMekko = rpts["rpt7"] = rpts[7] = mekko;
     state.addView({ref:7, update:rptMekko.update },7); // will add to views and update called when view is active

@@ -59,7 +59,7 @@ nv.models.multiBarHorizontalFilter = function() {
         });
         return series;
       });
-      console.log(data);
+      //console.log(data);
 
 
 
@@ -180,7 +180,10 @@ nv.models.multiBarHorizontalFilter = function() {
                   pos: [ y(getY(d,i) + (stacked ? d.y0 : 0)), x(getX(d,i)) + (x.rangeBand() * (stacked ? data.length / 2 : d.series + .5) / data.length) ],
                   pointIndex: i,
                   seriesIndex: d.series,
-                  e: d3.event
+                  e: d3.event,
+                  key : data[d.series].key,
+                  x : d.display,
+                  y : getY(d,i)/data[d.series].value
                 });
             } else {
                 preventMouseover = false;
@@ -475,9 +478,9 @@ nv.models.multiBarHorizontalFilterChart = function() {
     , showLegend = true
     , stacked = false
     , tooltips = true
-    , tooltip = function(key, x, y, e, graph) {
-        return '<h3>' + key + ' - ' + x + '</h3>' +
-               '<p>' +  y + '</p>'
+    , tooltip = function(e, graph) {
+        return '<h3>' + e.key + ' - ' + e.x + '</h3>' +
+               '<p>' + rptFmtN(e.value) + ' ('+ rptFmt(e.y).trim() + ')</p>'
       }
     , x //can be accessed via chart.xScale()
     , y //can be accessed via chart.yScale()
@@ -516,9 +519,7 @@ nv.models.multiBarHorizontalFilterChart = function() {
     var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
         top = e.pos[1] + ( offsetElement.offsetTop || 0),
         //x = xAxis.tickFormat()(multibar.x()(e.point, e.pointIndex)),
-        x = e.point.display,
-        y = yAxis.tickFormat()(multibar.y()(e.point, e.pointIndex)),
-        content = tooltip(e.series.key, x, y, e, chart);
+        content = tooltip(e, chart);
 
     nv.tooltip.show([left, top], content, e.value < 0 ? 'e' : 'w', null, offsetElement);
   };

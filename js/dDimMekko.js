@@ -7,7 +7,7 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
         state : state,
         palette : palettes['tarnish20'],
         valueFormat : rptFmtN,
-        margin : {top: 30, right: 10, bottom: 30, left: 30},
+        margin : {top: 10, right: 10, bottom: 30, left: 30},
         showValues : true,
         transitionDuration : 250,
         showControls : false,
@@ -58,13 +58,13 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
 
     ret.getCurrentFilter = function(){
         //go to filterSelectors - should set these on initalisation
-        return o.filter.map(function(e,i,a) { console.log(e()); return f(e); } );
+        return o.filter.map(function(e,i,a) { return f(e); } );
     }
 
     // function to requery and update
     ret.update = function(){ // return 0;
         // function to update - called from state manager
-        filter = ret.getCurrentFilter(); console.log(filter);
+        filter = ret.getCurrentFilter(); //console.log(filter);
         data = o.source.groupBy(filter); //console.log(data);
         ret.chartData = reshapeFilterData(data); //console.log(ret.chartData);
         if(filter.filter(function(e,i,a) { return i==filter.lastIndexOf(e); }).length===filter.length){
@@ -127,7 +127,7 @@ function dDimMekko(options){ // wraps customised nvd3 horizontal bar chart
             } else {
                 unordered.push(s);
             }
-            res = ordered.concat(unordered);
+            res = ordered.concat(unordered).filter(function(e,i,a){ return e !== undefined }); // filter to compact array
             if(e["colours"]){
                 res.forEach(function(f,j,b){
                     f['color']=e.colours[j];

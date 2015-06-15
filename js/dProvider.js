@@ -114,11 +114,11 @@ function dProvider(options){
 	// Access cache - return if found otherwise fill cachs
 	ret.segmentFromCache = function(key){ //cache will use string key
 		//Debugging
-		if(cache[key["id"]]) {
+		/*if(cache[key["id"]]) {
 			console.log("returned from cache with key: " + key["id"]);
 		} else {
 			console.log("updated cache with key: " + key["id"]);
-		}
+		}*/
 		return cache[key["id"]] ? cache[key["id"]] : ret.fillCache(key);
 	}
 	// Fill cache by accessing source objects

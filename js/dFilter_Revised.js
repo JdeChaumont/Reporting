@@ -15,13 +15,17 @@ function dFilter(options){
         vArray : null, // values are returned as an array
         pNested : null,
         mreInDim : false, // measure is a dimension (in rows)
-        periods : 1,
+        periods : 1, // number of periods(elments) in measure
         cubes : [],
-        measures : []
+        measures : [],
+        countIsMre : false
     }
     var ret = {}; //child filters will refer to base
     var o = ret.options = extend(def,options); // merge defaults and options
     var filter;
+    // 20150510 - Adopt array approach similar to datavore
+    var table = ret['table'] = [];
+    var tableCols = [];
 
     ret.vAccessor = function(obj){ return obj; };
     ret.vSelect = function(obj,key,tgt) { return obj; };
@@ -66,6 +70,7 @@ function dFilter(options){
         }
         // create public properties
         ret.dims={};
+        ret.dims.lut = o.dims; ret.dims.map = {}; // possibility of collisions with dim names
         ret.filters = []; // replacement for indexes and filters
         filter = ret.filter = ret.filters[0] = { 'population' : o.data, 'indexes' : {}, 'aggregate' : {}, 'selected' : {} };
         // Initialise Indexes Object for each dimension - should indexes and dims be combined
@@ -73,9 +78,20 @@ function dFilter(options){
             // incorporate dim breakdown
             ret.dims[e] = { 'val' : i }; //associative map
             ret.dims[i] = { 'val' : e }; //ordered map
-            filter['indexes'][e] = { "range" : [] }; // inflate filters
-            filter['aggregate'][e] = {}; //could just use filter object
-            filter['selected'][e] = o.all;
+            filter['indexes'][i] = filter['indexes'][e] = { "range" : [] }; // inflate filters
+            filter['aggregate'][i] = filter['aggregate'][e] = {}; //could just use filter object
+            filter['selected'][i] = filter['selected'][e] = o.all;
+            ret.dims.map[e] = i;
+            tableCols.push({ 'name' : e, 'values' : [], 'type' : 'nominal' });
+        }
+        for(var e, i=0, a=o.measures, n=a.length; i<n; i+=1){ e = a[i];
+            // incorporate dim breakdown
+            tableCols.push({ 'name' : e, 'values' : [], 'type' : 'numeric' });
+            // lut not required
+            ret.dims.map[e] = i + o.dims.length;
+            // add to dims map
+            ret.dims[e] = { 'val' : i + o.dims.length }; //associative map
+            ret.dims[i+ o.dims.length] = { 'val' : e }; //ordered map
         }
         // Helper for filtering
         o.ndx = [];
@@ -88,8 +104,12 @@ function dFilter(options){
             o.tgtKey.push(tgtKey);
         }
         ret.initEach(); // run for each record
+        // Convert to array
+        populateTable();
+        tableCols = null; // remove references to temporary table
+
         filter['population'] = o.ndx;
-        console.log(JSON.stringify(dimsFilterHelper(filter['indexes'])));
+        //console.log(JSON.stringify(dimsFilterHelper(filter['indexes'])));
         ret.cube = []; //20150504 New functionality for creating partial cubes
         for(var e, i=0, a=o.dims, n=a.length; i<n; i+=1){ e = a[i];
             // initialise cube for all dimensions (less one)
@@ -103,6 +123,18 @@ function dFilter(options){
         }
         return ret;
     }
+    function encodeFilter(filter){
+        for(var e, i=0, a=o.dims, n=a.length; i<n; i+=1){ e = a[i];
+            filter['indexes'][i] = filter['indexes'][e];
+            filter['aggregate'][i] = filter['aggregate'][e];
+            filter['selected'][i] = filter['selected'][e];
+            for(var f, j=0, b=ret.table[i].lut, p=b.length; j<p; j+=1){ f = b[j];
+                filter['indexes'][i][j] = filter['indexes'][e][f];
+                filter['aggregate'][i][j] = filter['aggregate'][e][f];
+            }
+        }
+    }
+
     // Encode dimensions selected in bit
     ret.bitEncode = function (dims){
         var r = 0;
@@ -145,11 +177,78 @@ function dFilter(options){
                     ret.vSum(agg[v]['sum'][g],ret.vSelect(ret.vAccessor(e),o.tgtKey[k],o.tgt)); // needs to be parameterised
                     //ret.vSum(agg[v]['sum'][g],ret.vSelect(e[o.vProperty],o.tgtKey[k],o.tgt));
                 }
+                tableCols[j]['values'].push(e[f]);
+            }
+            for(var f, j=0, b=o.measures, p=b.length; j<p; j+=1){ f = b[j];  // f = dim To Index
+                tableCols[ret.dims.map[f]]['values'].push(ret.vAccessor(e)[f]);
             }
             o.ndx[i] = i;
         }
     }
+    // 20150510 - adopted from datavore
+    dv.type = {
+        nominal: "nominal",
+        ordinal: "ordinal",
+        numeric: "numeric",
+        unknown: "unknown"
+    };
+    table.addColumn = function(name, values, type, iscolumn) {
+        type = type || dv.type.unknown;
+        var compress = (type === dv.type.nominal || type === dv.type.ordinal);
+        var vals = values;
 
+        if (compress && !iscolumn) {
+            vals = [];
+            vals.lut = code(values); //console.log(vals.lut);
+            vals.map = dict(vals.lut); //console.log(vals.map);
+            for (var i = 0; i < values.length; ++i) {
+                vals.push(vals.map[values[i]]);
+            }
+            vals.get = function(idx) { return this.lut[this[idx]]; }
+        } else if (!iscolumn) {
+            vals.get = function(idx) { return this[idx]; }
+        }
+        vals.name = name;
+        vals.index = table.length;
+        vals.type = type;
+
+        table.push(vals);
+        table[name] = vals;
+    };
+
+    table.removeColumn = function(col) {
+        col = table[col] || null;
+        if (col != null) {
+            delete table[col.name];
+            table.splice(col.index, 1);
+        }
+        return col;
+    };
+
+    table.rows = function() { return table[0] ? table[0].length : 0; };
+
+    table.cols = function() { return table.length; };
+
+    table.get = function(col, row) { return table[col].get(row); }
+    /** @private */
+    function code(a) {
+        var c = [], d = {}, v;
+        for (var i=0, len=a.length; i<len; ++i) {
+            if (d[v = a[i]] === undefined) { d[v] = 1; c.push(v); }
+        }
+        return typeof(c[0]) !== "number" ? c.sort()
+            : c.sort(function(a,b) { return a - b; });
+    };
+    /** @private */
+    function dict(lut) {
+        return lut.reduce(function(a,b,i) { a[b] = i; return a; }, {});
+    };
+    // populate data table
+    function populateTable(){
+        tableCols.forEach(function(d) {
+            table.addColumn(d.name, d.values, d.type);
+        });
+    }
     //New Reduce Functionality
     ret.objInKey = function (obj,key){
         res=true;
@@ -170,21 +269,41 @@ function dFilter(options){
         }
         return true;
     }
+    // 20150510 - Based on array
+    ret.rowInKey = function (table,row,key){
+        res=true;
+        for(var e, i=0, a=key['dims'], n=a.length, o, v, vals=key['vals'], col; i<n; i+=1){ e = a[i];
+            col = table[e], v = vals[i], o = col[row];
+            if(v.fn) {
+                o = (col.lut ? col.lut[o] : o); // need to map for comparison in function
+                res = v.fn(o);
+            } else {
+                res=((o===v)||(+o===+v)); // no need to map v as already mapped
+            }
+            if(res===false){ return false };
+        }
+        return true;
+    }
     // Function to filter the entire population based on the indexes available - works on categorical basis
     ret.filterData = function(key,keys){ //should always be a key of the net selected dimensions (no all/'_')
         //return a filtered set of data based finding index for key and value
-        var keys = keys || Object.keys(key).filter(function(e,i,a){ return ret.skip(key[e],e)===false; }); // array of valid selected dimensions
+        var keys = key[0];
         var indexes = ret.filter['indexes'];
-        var filtered, remKey = {}, ndx = [];
-        for(var e, i=0, a=keys, n=a.length; i<n; i+=1){ e = a[i];
-            if(indexes[e][key[e]]){ // look for index for key and key value
-                ndx.push(indexes[e][key[e]]);
+        var filtered, remKey = { 'dims' : [], 'vals' : [] }, ndx = [];
+        for(var e, f, i=0, a=keys['dims'], b=keys['vals'], n=a.length; i<n; i+=1){ e = a[i]; f = b[i] // filter from 1st filter
+            if(indexes[e][f]){ // look for index for key and key value
+                ndx.push(indexes[e][f]);
             } else {
-                remKey[e] = key[e]; // if key not found in index - set-up 2nd stage filter
+                remKey['dims'].push(e); // if key not found in index - set-up 2nd stage filter
+                remKey['vals'].push(f);
             }
-        } console.log(key);
+        }
+        if(key[1]){  // Add in subfilter to remKey - eliminate 2nd filter
+            remKey['dims'] = remKey['dims'].concat(key[1]['dims']);
+            remKey['vals'] = remKey['vals'].concat(key[1]['vals']);
+        }
         if(ndx.length===0){ console.log("No index found");
-            filtered = ret.filter['population']; // no matching indexes found so return full data set
+            filtered = o.ndx; // no matching indexes found so return full data set
         } else {
             ndx.sort(function(a,b){a.length<b.length}); //order by smallest index
             filtered = Object.keys(ndx[0]["ref"]); // set to array of keys of smallest index
@@ -192,8 +311,8 @@ function dFilter(options){
                 filtered = filtered.filter(function(f,j,b){ return e["ref"][f]; }); // performed better than loop
             }
         }
-        //return filtered.map(function(e,i,a){ return o.data[e]; }).filter(ret.kFilter(remKey)); //returns array of objects - may remove length at this point
-        return map(filtered,ret.kFilter(remKey));
+        if(remKey['dims'].length===0) { return { 'population' : table, 'selected' : filtered }; }
+        return  { 'population' : table, 'selected' : map(filtered,ret.kFilterALT(table,remKey)) };
     }
     // Function to filter the entire population based on the indexes available - works on categorical basis
     ret.filterDataForValues = function(key){ //should always be a key of the net selected dimensions (no all/'_')
@@ -224,23 +343,33 @@ function dFilter(options){
         }
         return null;
     }
-
     // Map function using loop to filter data set
     function map(index,include){
         var res = [];
         for(var e, i=0, a=index, n=a.length; i<n; i+=1){ e = a[i];
-            filter(o.data[e]);
+            filter(e);
         }
         return res;
         //Helper method - better than assigning variable within loop
-        function filter(obj){
-            if(include(obj)){
-                res.push(obj);
+        function filter(row){
+            if(include(row)){
+                res.push(row);
             }
         }
     }
     // may rename to get measures
+    // 20150510 - New version to move key to an array format
+    // filterObj = { dims : [0,1,3], vals : ['X','Y',{ fn : function(){}, label : 'xyz' }], mre : <colNo> }
+    // Format = [ [ filterObj1, subFilter (optional)], [ filterObj2, subFilter (optional) ] ... [ filterObjN, subFilter (optional) ] ]
     ret.getValues = function(key){ // may change to just return the value only
+        // map filterArray
+        for(var e, i=0, a=key["filterArray"], n=a.length; i<n; i+=1){ e = a[i]; //console.log(key);
+            for(var f, g, j=0, b=e['dims'], c=e['vals'], p=b.length; j<p; j+=1){  f = b[j]; g = c[j];
+                e['dims'][j]=ret.dims.map[f]; // replace ret.dims later
+                e['vals'][j] = ret.table[ret.dims.map[f]].map[g] || g;
+            }
+        }
+        console.log(key);
         var population;
         if(key['subFilter']){
             population = ret.getPopulation(key);
@@ -257,10 +386,7 @@ function dFilter(options){
     }
     // function to return population of array objects without summarisation
     ret.getPopulation = function(key){ // amended to take full key and deal with subFilter
-        var res = ret.filterData(key['filter']);
-        if(key['subFilter']){
-            res = res.filter(ret.kFilter(key['subFilter']));
-        }
+        var res = ret.filterData(key['filterArray']);
         return res;
     }
     ret.valuesReduce = function(population,key){
@@ -275,40 +401,15 @@ function dFilter(options){
             if(v){ret.vSum(res,v);}
         }
     }
-    // Functionality to facilitate encoding of dims to speed up comparisons
-    /* ret.encodeFilter = function(key){
-        if(!o.dimsEncoded){
-            return key;
-        }
-        var filter = key['filter'], subFilter = key['obj']['filter'];
-        for(var k in filter){
-            if(dimsEncoded[k]){
-                if(dimsEncoded[k][filter[k]]){
-                    filter[k]=dimsEncoded[k][filter[k]];
-                }
-            }
-        }
-        if(subFilter){
-            for(var k in subFilter){
-                if(dimsEncoded[k]){
-                    if(dimsEncoded[k][filter[k]]){
-                        filter[k]=dimsEncoded[k][filter[k]];
-                    }
-                }
-            }
-        }
-    }
-    // Is data set encoded
-    ret.encoded = function(){
-        if(o.dimsEncoded){
-            return true;
-        }
-        return false;
-    } */
-    // filter used downstream
+
     ret.kFilter =function(key){
         return function(obj,i,a){
             return ret.objInKey(obj,key);
+        }
+    }
+    ret.kFilterALT =function(table,key){
+        return function(row,i,a){
+            return ret.rowInKey(table,row,key);
         }
     }
     // keyReduce is new function - does not overwrite - does not need to be on the object
@@ -338,6 +439,7 @@ function dFilter(options){
         var filter = inflateFilter();
         updateFilterPopulation(dim,value);
         updateFilter(o.tgtKey); //needs to be set to dimension being summed - should be o.val - no longer required
+        encodeFilter(filter);
         return ret.filter=filter;
         // Entry point for filter update
         function updateFilterPopulation(key,value){
@@ -369,8 +471,9 @@ function dFilter(options){
             for(var e, i=0, a=o.dims, n=a.length; i<n; i+=1){ e = a[i]; // e = dim
                 agg[e] = {}; //could just use filter object
                 ndx[e] = { "range" : [] };
-                sel[e] = last['selected'][e];
+                sel[i] = sel[e] = last['selected'][e];
                 for(var f, j=0, b=ret.range(e) , p=b.length; j<p; j+=1){ f = b[j]; // f = keys/range in dim
+                    var lut = ret.table[j].map ? ret.table[j].map[f] : null; // required for mre - need to remove
                     agg[e][f] = { 'sum' : {}, 'count' : 0 };
                     ndx[e][f] = { "length" : 0, "ref" : {} };
                     //o.val.forEach(function(g,k,c){
@@ -388,16 +491,19 @@ function dFilter(options){
             for(var e, i=0, a=filter['population'], n=a.length; i<n; i+=1){ e = a[i]; // e is object
                 // Inflate indexes for each record
                 for(var f, j=0, b=o.dims, p=b.length; j<p; j+=1){ f = b[j]; // f = dim
-                    var v = ret.pAccessor(o.data[e],f); // returns value for dim
-                    //var v = o.data[e][f]; // Hack speed optimisation
-                    ndx = filter['indexes'][f];
-                    agg = filter['aggregate'][f];
-                    ndx[v]["ref"][e] = 1; // e is index within o.source
-                    ndx[v]["length"]++;
-                    agg[v]['count']++;
-                    for(var g, k=0, c=o.val, q=c.length; k<q; k+=1){ g = c[k];
-                        ret.vSum(agg[v]['sum'][g],ret.vSelect(ret.vAccessor(o.data[e]),o.tgtKey[k],target||o.tgt)); // needs to be parameterised
-                        //ret.vSum(agg[v]['sum'][g],ret.vSelect(o.data[e][o.vProperty],o.tgtKey[k],target||o.tgt)); // Hack speed optimisation
+                    //var v = ret.pAccessor(o.data[e],f); console.log(v);// returns value for dim
+                    var v = ret.table[j].lut[ret.table[j][e]]; // order will be the same - no need for pAcessor
+                    if(v){
+                        ndx = filter['indexes'][f];
+                        agg = filter['aggregate'][f];
+                        ndx[v]["ref"][e] = 1; // e is index within o.source
+                        ndx[v]["length"]++;
+                        agg[v]['count']++;
+                        for(var g, k=0, c=o.val, q=c.length; k<q; k+=1){ g = c[k];
+                            ret.vSum(agg[v]['sum'][g],ret.table[ret.dims.map[g]][e]);
+                            //ret.vSum(agg[v]['sum'][g],ret.vSelect(ret.vAccessor(o.data[e]),o.tgtKey[k],target||o.tgt)); // needs to be parameterised
+                            //ret.vSum(agg[v]['sum'][g],ret.vSelect(o.data[e][o.vProperty],o.tgtKey[k],target||o.tgt)); // Hack speed optimisation
+                        }
                     }
                 }
             }
@@ -437,7 +543,6 @@ function dFilter(options){
         inflateResults(combinations(dims));
         sumPopulation();
         flattenResults();
-        //console.log(res);
         return res;
         // Recursive function to fill out results structure
         function inflateResults(dimsNext,partKey){
@@ -460,8 +565,8 @@ function dFilter(options){
         function sumPopulation(){
             var obj, key, r;
             var tgtKey = measures.map(function(e,i,a) { var res = {}; res[o.tgt] = e; return res;  } ); // awful hack due to structure of vSelect
-            console.log(tgtKey); console.log(ret.filter['population'].length);
-            for(var e, i=0, a=ret.filter['population'], n=a.length; i<n; i+=1){ e = a[i]; // e is object
+            console.log(tgtKey);
+            for(var e, i=0, a=filter['population'], n=a.length; i<n; i+=1){ e = a[i]; // e is object
                 obj = o.data[e];
                 key = "";
                 for(var f, j=0, b=dims, p=b.length; j<p; j+=1){ f = b[j];
@@ -489,7 +594,7 @@ function dFilter(options){
         function combinations(dims){
             var res = [];
             for(var e, i=0, a=dims, n=a.length; i<n; i+=1){ e = a[i];
-                res.push(ret.filters[0]['indexes'][e]['range']);
+                res.push(ret.filter['indexes'][e]['range']);
             }
             return res;
         }
@@ -550,18 +655,30 @@ function dFilterArray(options){
     }
     // getValues overwritten
     ret.getValues = function(key){ //same interface as previous - key has already been processed though fullkey function
-        var population;
-        if(Object.keys(key['subFilter']).length>0){
-            population = ret.getPopulation(key);
-        } else {
-            population = ret.filterDataForValues(key['filter']);
+        for(var e, i=0, a=key["filterArray"], n=a.length; i<n; i+=1){ e = a[i]; //console.log(key);
+            for(var f, g, j=0, b=e['dims'], c=e['vals'], p=b.length; j<p; j+=1){  f = b[j]; g = c[j];
+                e['dims'][j]=ret.dims.map[f]; // replace ret.dims later
+                e['vals'][j] = ret.table[ret.dims.map[f]].map[g] || g;
+            }
         }
+        var m = key["filterArray"][0]['mre'];
+        m = ret.dims.map[m] || m;
+        var pop, val;
+        /*if(Object.keys(key['subFilter']).length>0){
+            pop = ret.getPopulation(key).pop;
+            val = ret.valuesReduceALT(pop.population,pop.selected,m)
+        } else {
+            pop = ret.filterDataForValues(key['filter']);
+            val = ret.valuesReduce(pop,key['filter']);
+        }*/
+        pop = ret.getPopulation(key);
+        val = ret.valuesReduceALT(pop.population,pop.selected,m)
+
         return {
             id : key['id'], // id string
             key : key['obj'], // full key
             filter : key['filter'], //only filtered dimensions
-            //value : population.reduce(ret.keyReduce(key['filter']), o.result(0,o.periods)) //This is hard coded
-            value : ret.valuesReduce(population,key['filter'])
+            value : val
         }
     }
     ret.valuesReduce = function(population,key){
@@ -574,6 +691,18 @@ function dFilterArray(options){
         function sum(obj){
             //var v = ret.vSelect(ret.vAccessor(obj),key,o.tgt);
             var v = ret.vSelect(obj[o.vProperty],key,o.tgt); // Hack speed optimisation
+            if(v){ret.vSum(res,v);}
+        }
+    }
+    ret.valuesReduceALT = function(population,selected,mre){ // population is list of references - mre passed in as col number
+        var res = o.result(0,o.periods);
+        for(var e, i=0, a=selected, n=a.length; i<n; i+=1){ e = a[i];
+            sum(e);
+        }
+        return res;
+        //Helper method - better than assigning variable within loop
+        function sum(row){
+            var v = population[mre][row];
             if(v){ret.vSum(res,v);}
         }
     }
