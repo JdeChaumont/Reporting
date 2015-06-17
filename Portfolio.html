@@ -35,7 +35,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="container page fabricLarge" style="height:100%;width:100%">
+	<div class="container page grid" style="height:100%;width:100%">
 		<div class="row-fluid col-sm-12 no-padding" style="padding-top:5px;padding-bottom:5px">
 			<div class="pull-right btn-group prt"></div>
 			<div class="row-fluid" style="display:table">
@@ -224,10 +224,10 @@
 
 		<script>
 			eval(pako.inflate(window.atob(payLoadData), { to: 'string' }));
-			var load = d3.selectAll(".loadReport")
-							.on("click",loadReport);
+			//var load = d3.selectAll(".loadReport")
+			//				.on("click",loadReport);
 			$(".start_button_round").css("display","block");
-
+			window.onload = setTimeout(loadReport,500);
 		</script>
 
 	</body>

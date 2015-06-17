@@ -115,7 +115,7 @@ nv.models.mekko = function() {
             .attr('x', function(d,i) {  return  x(d.value/2) })
         //20150119 must run after labels have been rendered
         xCatBar.selectAll('text').style('opacity',function(d,i){ // console.log(this.getComputedTextLength()); console.log(x(d.value));
-            return (this.getComputedTextLength()>x(d.value) || (xCatBarHeight/2)<this.getBBox().height) ? 0 : 1;
+            return (this.getComputedTextLength()>x(d.value)) ? 0 : 1; // height check not relevant and breaking IE
         });
 
         if (barColor) {

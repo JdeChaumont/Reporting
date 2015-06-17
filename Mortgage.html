@@ -151,6 +151,18 @@
 					<div class="rptFooter indent"></div>
 				</div>
 				<div id="rpt7" class="inActiveTab">
+					<div class="fullspan rptControls">
+							<div class="btn-group pull-right rptPage"></div>
+					</div>
+					<div class="row-fluid" style="padding:5px">
+						<div class="rptTitle indent">Counties</div>
+						<div class="full-width rptTitleBorder"></div>
+					</div>
+					<div class="rptBody indent" id="rptCounties"></div>
+					<div class="rptCommentary indent">Additional commentary is placed at this point</div>
+					<div class="rptFooter indent"></div>
+				</div>
+				<div id="rpt8" class="inActiveTab">
 					<div class="fullspan no-padding" style="padding:0">
 						<div class="fullspan" style="padding:0">
 							<div class="row-fluid" style="padding:0;display:block;margin-left:30px;margin-right:auto">
@@ -224,10 +236,10 @@
 
 		<script>
 			eval(pako.inflate(window.atob(payLoadData), { to: 'string' }));
-			var load = d3.selectAll(".loadReport")
-							.on("click",loadReport);
+			//var load = d3.selectAll(".loadReport")
+			//				.on("click",loadReport);
 			$(".start_button_round").css("display","block");
-
+			window.onload = setTimeout(loadReport,500);
 		</script>
 
 	</body>

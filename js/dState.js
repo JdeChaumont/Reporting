@@ -84,7 +84,7 @@ var anchorManager = function(){
 		return i;
 	}
 
-	ret.changeAnchorPart = function( argMap ) {
+	ret.changeAnchorPart = function( argMap ) { console.log(argMap);
 		spinner.spin(); setTimeout(function(){spinner.stop();},1000); // spinner with 1 sec timer - would prefer not to have here
 		var anchorMapRevise = copyAnchorMap(), result = true, k, k_dep;
 		// Begin merge changes into anchor map

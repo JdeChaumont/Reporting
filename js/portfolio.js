@@ -156,8 +156,8 @@ function loadReport(){
     var dpdMap = encodeValueMap('dpd_band',{ "UTD":"UTD", "0-30":">0", "30-60":">30", "60-90":">30" });
     var dimsToAddToFilter = [
         { 'name' : 'dpd', 'derivedFrom' : 'dpd_band', 'grpFn' : grpCategories(dpdMap,">90") },
-        { 'name' : 'forborne', 'derivedFrom' : 'fb', 'grpFn' : grpCategories({ "b":"N"},"Y") },
-        { 'name' : 'secured', 'derivedFrom' : 'ltv_band', 'grpFn' : grpCategories({ "f":"N","g":"N"},"Y") },
+        { 'name' : 'forborne', 'derivedFrom' : 'fb', 'grpFn' : grpCategories(encodeValueMap('fb',{ "No":"N"}),"Y") },
+        { 'name' : 'secured', 'derivedFrom' : 'ltv_band', 'grpFn' : grpCategories(encodeValueMap('ltv_band',{ "LTVexclusions":"N","NA":"N"}),"Y") },
     ];
     dataDims = ['dpd','forborne','secured'].concat(dataDims);
     // console.log(dataDims);
@@ -418,6 +418,26 @@ function loadReport(){
     //*******************************************************************************
     $(window) //move this to bottom
         .bind( 'hashchange', function(e) { anchor.onHashchange(e);  } )
-    anchor.changeAnchorPart({report:0});
+    anchor.changeAnchorPart({report:"0"});
+    //updateReport();
+}
 
+function updateReport(){
+    var tempAnchor, anchorMapInit = {};
+    try { tempAnchor = $.uriAnchor.makeAnchorMap(); }
+    catch ( error ) {
+        anchor.changeAnchorPart({report:0});
+    }
+    console.log(tempAnchor);
+    if(!tempAnchor||!tempAnchor["report"]) {
+        anchor.changeAnchorPart({report:0});
+    } else {
+        for(var k in tempAnchor){
+            if(k.indexOf('s_')===-1&&tempAnchor.hasOwnProperty(k)){
+                anchorMapInit[k] = tempAnchor[k];
+            }
+        }
+        console.log(anchorMapInit);
+        anchor.changeAnchorPart(anchorMapInit); //- this won't work
+    }
 }

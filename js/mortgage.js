@@ -124,7 +124,7 @@ function loadReport(){
     //*******************************************************************************
     //Changed to dropdown
     var report = stateElementDropdown(state, "report", "dropdown-style",
-        ["Group Overview","Arrears Performance", "Forbearance", "Rate Characteristics", "Loan Size distribution","Loan to Value", "Geographic Distribution", "Marimekko"],null,
+        ["Group Overview","Arrears Performance", "Forbearance", "Rate Characteristics", "Loan Size distribution","Loan to Value", "Geographic Distribution", "Counties", "Marimekko"],null,
         [reportChange("rpt"),outputStyle("rpt")]); //Additional Handler to fade in/out pages
 
     //Handler to add to report state to test output of getComputedStyle
@@ -157,7 +157,7 @@ function loadReport(){
     var dimsToAddToFilter = [
         { 'name' : 'dpd', 'derivedFrom' : 'dpd_band', 'grpFn' : grpCategories(dpdMap,">90") },
         { 'name' : 'forborne', 'derivedFrom' : 'fb', 'grpFn' : grpCategories(encodeValueMap('fb',{ "No":"N"}),"Y") },
-        { 'name' : 'secured', 'derivedFrom' : 'ltv_band', 'grpFn' : grpCategories({ "f":"N","g":"N"},"Y") },
+        { 'name' : 'secured', 'derivedFrom' : 'ltv_band', 'grpFn' : grpCategories(encodeValueMap('ltv_band',{ "LTVexclusions":"N","NA":"N"}),"Y") },
     ];
     dataDims = ['dpd','forborne','secured'].concat(dataDims);
     // console.log(dataDims);
@@ -338,6 +338,7 @@ function loadReport(){
     var reportDef4 = rptDef4();
     var reportDef5 = rptDef5();
     var reportDef6 = rptDef6();
+    var reportDef7 = rptDef7();
 
     var rptDiv = rpts[reportDef0.name] = rpts[reportDef0.ref] = jdcGrid({source : pxf, def: reportDef0, pageCtrl : state['rptPage'] });
     var rptArrs = rpts[reportDef1.name] = rpts[reportDef1.ref] = jdcGrid({source : pxf, def: reportDef1, pageCtrl : state['rptPage'] });
@@ -346,6 +347,7 @@ function loadReport(){
     var rptLoanSize = rpts[reportDef4.name] = rpts[reportDef4.ref] = jdcGrid({source : pxf, def: reportDef4, pageCtrl : state['rptPage'] });
     var rptLTV = rpts[reportDef5.name] = rpts[reportDef5.ref] = jdcGrid({source : pxf, def: reportDef5, pageCtrl : state['rptPage'] });
     var rptGeo = rpts[reportDef6.name] = rpts[reportDef6.ref] = jdcGrid({source : pxf, def: reportDef6, pageCtrl : state['rptPage'] });
+    var rptCounties = rpts[reportDef7.name] = rpts[reportDef7.ref] = jdcGrid({source : pxf, def: reportDef7, pageCtrl : state['rptPage'] });
 
     //state.addView({ref:0, update:function(){return 0;}},0);
     state.addView(rptDiv,0);
@@ -355,6 +357,7 @@ function loadReport(){
     state.addView(rptLoanSize,4);
     state.addView(rptLTV,5);
     state.addView(rptGeo,6);
+    state.addView(rptCounties,7);
 
     //*******************************************************************************
     // Marimekko chart
@@ -410,8 +413,8 @@ function loadReport(){
     var mekko = dDimMekko(mekkoOptions);
     //console.log(mekko);
 
-    var rptMekko = rpts["rpt7"] = rpts[7] = mekko;
-    state.addView({ref:7, update:rptMekko.update },7); // will add to views and update called when view is active
+    var rptMekko = rpts["rpt8"] = rpts[8] = mekko;
+    state.addView({ref:8, update:rptMekko.update },8); // will add to views and update called when view is active
 
     //*******************************************************************************
     //Step 5 - Set-up event handler and finalise

@@ -66,35 +66,39 @@ function encodeDef(def){
 
 //console.log(defaultDims(dataDims,state));
 
+function portfolioColumns(){
+    return  [ 	{ display : "", css : "h4" }, //need to reserve space and set css
+                //{ display : "Movement 13 mths", css : "sparkline" , key : { mre : "BlD"}, chartType : nv.models.sparkbarPlus },
+                { display : "#", format : fd, key : { mre : "count"} },
+                { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "bal" }, "Avg", [ { mre : "bal" }, { mre : "count" } ]), page : '0' },
+                { display : "Balance", format : fv, key : { mre : "bal"} },
+                // Default Page
+                { display : "% of Total", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotalArr", [ {  mre : "bal" }, setDims(dataDims,state,{ mre : "bal"}) ]), page : '0' },
+                //{ display : "% of All", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotal", [ { mre : "bal" }, setDims(dataDims,state,{mre : "bal"},{'dpd_band' : 1, npl : 1} ) ]), page : '0' },
+                { display : "Provision", format : fv, key : { mre : "prv"}, page : '0'  },
+                { display : "Prov Rate", format : fp, key : ofTotalHelper( { mre : "prv" }, "prvRate", [ { mre : "prv" }, { mre : "bal"} ]), page : '0' },
+                // Page 1 - Financial Characteristics
+                { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "bal"} ]), page : '1' },
+                { display : "Avg Term <BR> (remaining)", key : ofTotalHelper( { mre : "ew_rem_term" }, "remTerm", [ { mre : "ew_rem_term" }, { mre : "bal"} ]), page : '1' },
+                { display : "Avg Time <BR> on Book", key : ofTotalHelper( { mre : "ew_TOB" }, "TOB", [ { mre : "ew_TOB" }, { mre : "bal"} ]), page : '1' },
+                { display : "Avg Days <BR> in Arrears", key : ofTotalHelper( { mre : "ew_DiA" }, "DiA", [ { mre : "ew_DiA" }, { mre : "bal"} ]), page : '1' },
+                { display : "iLTV %", key : ofTotalHelper( { mre : "ew_iLTV" }, "iLTV", [ { mre : "ew_iLTV", secured : "Y" }, { mre : "bal", secured : "Y"} ]), page : '1' },
+                // Page 2 - KPI's - % Arrears, >90, NPL, Forborne, Closure
+                { display : "Arrears %", format : fp, key : ofTotalHelper( { mre : "bal" }, "ArrsPc", [ { mre : "bal", subFilter : { dpd : xfFilter('dpd','Arrs',function(d){return d!=="UTD";}) }  }, { mre : "bal" } ]), page : '2' },
+                { display : ">90 days %", format : fp, key : ofTotalHelper( { mre : "bal" }, "90PlusPc", [ { mre : "bal", subFilter : { dpd : ">90"  }}, { mre : "bal" } ]), page : '2'  },
+                { display : "NPL %", format : fp, key : ofTotalHelper( { mre : "bal" }, "NPLPc", [ { mre : "bal", subFilter : { npl : "b"  }}, { mre : "bal" } ]), page : '2'  },
+                { display : "Forborne %", format : fp, key : ofTotalHelper( { mre : "bal" }, "FbPc", [ { mre : "bal", subFilter : { forborne : "Y"}}, { mre : "bal" } ]), page : '2' },
+
+            ];
+}
+
 rptDef0 = function() {
     return encodeDef({
         ref: 0,
         name : "rpt0",
         container : "rptDivision",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : [ 	{ display : "", css : "h4" }, //need to reserve space and set css
-                    //{ display : "Movement 13 mths", css : "sparkline" , key : { mre : "BlD"}, chartType : nv.models.sparkbarPlus },
-                    { display : "#", format : fd, key : { mre : "count"} },
-                    { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "bal" }, "Avg", [ { mre : "bal" }, { mre : "count" } ]), page : '0' },
-                    { display : "Balance", format : fv, key : { mre : "bal"} },
-                    // Default Page
-                    { display : "% of Total", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotalArr", [ {  mre : "bal" }, setDims(dataDims,state,{ mre : "bal"}) ]), page : '0' },
-                    //{ display : "% of All", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotal", [ { mre : "bal" }, setDims(dataDims,state,{mre : "bal"},{'dpd_band' : 1, npl : 1} ) ]), page : '0' },
-                    { display : "Provision", format : fv, key : { mre : "prv"}, page : '0'  },
-                    { display : "Prov Rate", format : fp, key : ofTotalHelper( { mre : "prv" }, "prvRate", [ { mre : "prv" }, { mre : "bal"} ]), page : '0' },
-                    // Page 1 - Financial Characteristics
-                    { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Term <BR> (remaining)", key : ofTotalHelper( { mre : "ew_rem_term" }, "remTerm", [ { mre : "ew_rem_term" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Time <BR> on Book", key : ofTotalHelper( { mre : "ew_TOB" }, "TOB", [ { mre : "ew_TOB" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Days <BR> in Arrears", key : ofTotalHelper( { mre : "ew_DiA" }, "DiA", [ { mre : "ew_DiA" }, { mre : "bal"} ]), page : '1' },
-                    { display : "iLTV %", key : ofTotalHelper( { mre : "ew_iLTV" }, "iLTV", [ { mre : "ew_iLTV", secured : "Y" }, { mre : "bal", secured : "Y"} ]), page : '1' },
-                    // Page 2 - KPI's - % Arrears, >90, NPL, Forborne, Closure
-                    { display : "Arrears %", format : fp, key : ofTotalHelper( { mre : "bal" }, "ArrsPc", [ { mre : "bal", subFilter : { dpd : xfFilter('dpd','Arrs',function(d){return d!=="UTD";}) }  }, { mre : "bal" } ]), page : '2' },
-                    { display : ">90 days %", format : fp, key : ofTotalHelper( { mre : "bal" }, "90PlusPc", [ { mre : "bal", subFilter : { dpd : ">90"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "NPL %", format : fp, key : ofTotalHelper( { mre : "bal" }, "NPLPc", [ { mre : "bal", subFilter : { npl : "b"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "Forborne %", format : fp, key : ofTotalHelper( { mre : "bal" }, "FbPc", [ { mre : "bal", subFilter : { forborne : "Y"}}, { mre : "bal" } ]), page : '2' },
-
-                    ],
+        cols : portfolioColumns(),
         rows : [ 	{ display : "" }, //need to reserve space
                     { display : "Total", key : {  } },
                     { display : " ", css : "blank" },
@@ -105,15 +109,12 @@ rptDef0 = function() {
                     { display : " ", css : "blank" },
                     { display : "HL", key : { prt : "HL" } },
                     { display : "BTL", key : { prt : "BTL" } },
-                    { display : "Commercial", key : { prt : "Commercial" } },
-                    { display : "CHL", key : { prt : "CHL" } },
-                    { display : "IoM", key : { prt : "IoM" } },
-                    { display : "Consumer", key : { prt : "Consumer" } },
                     { display : " ", css : "blank" },
-                    { display : "Term", key : { sector : "Term Lending" } },
-                    { display : "Current a/c", key : { sector : "Current Account" } },
-                    { display : "Visa", key : { sector : "VISA" } },
-                    { display : "NCU", key : { sector : "NCU" } },
+                    { display : "Deleverage", css : "blank" },
+                    { display : " ", css : "blank" },
+                    { display : "Hold", key : { sale : "N" } },
+                    { display : "Sale Agreed", key : { sale : "Y" } },
+
 
                     ],
         eventHandlers : { '.cell' : { click : cellClicked }, 'tr' : { mouseover : highlightRow, mouseout : unhighlightRow } }
@@ -126,29 +127,7 @@ rptDef1 = function() {
         name : "rpt1",
         container : "rptArrears",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : [ 	{ display : "", css : "h4" }, //need to reserve space and set css
-                    //{ display : "Movement 13 mths", css : "sparkline" , key : { mre : "BlD"}, chartType : nv.models.sparkbarPlus },
-                    { display : "#", format : fd, key : { mre : "count"} },
-                    { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "bal" }, "Avg", [ { mre : "bal" }, { mre : "count" } ]), page : '0' },
-                    { display : "Balance", format : fv, key : { mre : "bal"} },
-                    // Default Page
-                    { display : "% of Total", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotalArr", [ {  mre : "bal" }, setDims(dataDims,state,{ mre : "bal"}) ]), page : '0' },
-                    //{ display : "% of All", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotal", [ { mre : "bal" }, setDims(dataDims,state,{mre : "bal"},{'dpd_band' : 1, npl : 1} ) ]), page : '0' },
-                    { display : "Provision", format : fv, key : { mre : "prv"}, page : '0'  },
-                    { display : "Prov Rate", format : fp, key : ofTotalHelper( { mre : "prv" }, "prvRate", [ { mre : "prv" }, { mre : "bal"} ]), page : '0' },
-                    // Page 1 - Financial Characteristics
-                    { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Term <BR> (remaining)", key : ofTotalHelper( { mre : "ew_rem_term" }, "remTerm", [ { mre : "ew_rem_term" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Time <BR> on Book", key : ofTotalHelper( { mre : "ew_TOB" }, "TOB", [ { mre : "ew_TOB" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Days <BR> in Arrears", key : ofTotalHelper( { mre : "ew_DiA" }, "DiA", [ { mre : "ew_DiA" }, { mre : "bal"} ]), page : '1' },
-                    { display : "iLTV %", key : ofTotalHelper( { mre : "ew_iLTV" }, "iLTV", [ { mre : "ew_iLTV", secured : "Y" }, { mre : "bal", secured : "Y"} ]), page : '1' },
-                    // Page 2 - KPI's - % Arrears, >90, NPL, Forborne, Closure
-                    { display : "Arrears %", format : fp, key : ofTotalHelper( { mre : "bal" }, "ArrsPc", [ { mre : "bal", subFilter : { dpd : xfFilter('dpd','Arrs',function(d){return d!=="UTD";}) }  }, { mre : "bal" } ]), page : '2' },
-                    { display : ">90 days %", format : fp, key : ofTotalHelper( { mre : "bal" }, "90PlusPc", [ { mre : "bal", subFilter : { dpd : ">90"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "NPL %", format : fp, key : ofTotalHelper( { mre : "bal" }, "NPLPc", [ { mre : "bal", subFilter : { npl : "b"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "Forborne %", format : fp, key : ofTotalHelper( { mre : "bal" }, "FbPc", [ { mre : "bal", subFilter : { forborne : "Y"}}, { mre : "bal" } ]), page : '2' },
-
-                    ],
+        cols : portfolioColumns(),
         rows : [ 	{ display : "" }, //need to reserve space
                     { display : "Total", key : {  } },
                     { display : " ", css : "blank" },
@@ -189,29 +168,7 @@ rptDef2 = function() {
         name : "rpt2",
         container : "rptFB",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : [ 	{ display : "", css : "h4" }, //need to reserve space and set css
-                    //{ display : "Movement 13 mths", css : "sparkline" , key : { mre : "BlD"}, chartType : nv.models.sparkbarPlus },
-                    { display : "#", format : fd, key : { mre : "count"} },
-                    { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "bal" }, "Avg", [ { mre : "bal" }, { mre : "count" } ]), page : '0' },
-                    { display : "Balance", format : fv, key : { mre : "bal"} },
-                    // Default Page
-                    { display : "% of Total", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotalArr", [ {  mre : "bal" }, setDims(dataDims,state,{ mre : "bal"}) ]), page : '0' },
-                    //{ display : "% of All", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotal", [ { mre : "bal" }, setDims(dataDims,state,{mre : "bal"},{'dpd_band' : 1, npl : 1} ) ]), page : '0' },
-                    { display : "Provision", format : fv, key : { mre : "prv"}, page : '0'  },
-                    { display : "Prov Rate", format : fp, key : ofTotalHelper( { mre : "prv" }, "prvRate", [ { mre : "prv" }, { mre : "bal"} ]), page : '0' },
-                    // Page 1 - Financial Characteristics
-                    { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Term <BR> (remaining)", key : ofTotalHelper( { mre : "ew_rem_term" }, "remTerm", [ { mre : "ew_rem_term" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Time <BR> on Book", key : ofTotalHelper( { mre : "ew_TOB" }, "TOB", [ { mre : "ew_TOB" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Days <BR> in Arrears", key : ofTotalHelper( { mre : "ew_DiA" }, "DiA", [ { mre : "ew_DiA" }, { mre : "bal"} ]), page : '1' },
-                    { display : "iLTV %", key : ofTotalHelper( { mre : "ew_iLTV" }, "iLTV", [ { mre : "ew_iLTV", secured : "Y" }, { mre : "bal", secured : "Y"} ]), page : '1' },
-                    // Page 2 - KPI's - % Arrears, >90, NPL, Forborne, Closure
-                    { display : "Arrears %", format : fp, key : ofTotalHelper( { mre : "bal" }, "ArrsPc", [ { mre : "bal", subFilter : { dpd : xfFilter('dpd','Arrs',function(d){return d!=="UTD";}) }  }, { mre : "bal" } ]), page : '2' },
-                    { display : ">90 days %", format : fp, key : ofTotalHelper( { mre : "bal" }, "90PlusPc", [ { mre : "bal", subFilter : { dpd : ">90"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "NPL %", format : fp, key : ofTotalHelper( { mre : "bal" }, "NPLPc", [ { mre : "bal", subFilter : { npl : "b"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "Forborne %", format : fp, key : ofTotalHelper( { mre : "bal" }, "FbPc", [ { mre : "bal", subFilter : { forborne : "Y"}}, { mre : "bal" } ]), page : '2' },
-
-                    ],
+        cols : portfolioColumns(),
         rows : [ 	{ display : "" }, //need to reserve space
                     { display : "Total", key : {  } },
                     { display : " ", css : "blank" },
@@ -241,29 +198,7 @@ rptDef3 = function() {
         name : "rpt3",
         container : "rptRate",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : [ 	{ display : "", css : "h4" }, //need to reserve space and set css
-                    //{ display : "Movement 13 mths", css : "sparkline" , key : { mre : "BlD"}, chartType : nv.models.sparkbarPlus },
-                    { display : "#", format : fd, key : { mre : "count"} },
-                    { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "bal" }, "Avg", [ { mre : "bal" }, { mre : "count" } ]), page : '0' },
-                    { display : "Balance", format : fv, key : { mre : "bal"} },
-                    // Default Page
-                    { display : "% of Total", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotalArr", [ {  mre : "bal" }, setDims(dataDims,state,{ mre : "bal"}) ]), page : '0' },
-                    //{ display : "% of All", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotal", [ { mre : "bal" }, setDims(dataDims,state,{mre : "bal"},{'dpd_band' : 1, npl : 1} ) ]), page : '0' },
-                    { display : "Provision", format : fv, key : { mre : "prv"}, page : '0'  },
-                    { display : "Prov Rate", format : fp, key : ofTotalHelper( { mre : "prv" }, "prvRate", [ { mre : "prv" }, { mre : "bal"} ]), page : '0' },
-                    // Page 1 - Financial Characteristics
-                    { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Term <BR> (remaining)", key : ofTotalHelper( { mre : "ew_rem_term" }, "remTerm", [ { mre : "ew_rem_term" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Time <BR> on Book", key : ofTotalHelper( { mre : "ew_TOB" }, "TOB", [ { mre : "ew_TOB" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Days <BR> in Arrears", key : ofTotalHelper( { mre : "ew_DiA" }, "DiA", [ { mre : "ew_DiA" }, { mre : "bal"} ]), page : '1' },
-                    { display : "iLTV %", key : ofTotalHelper( { mre : "ew_iLTV" }, "iLTV", [ { mre : "ew_iLTV", secured : "Y" }, { mre : "bal", secured : "Y"} ]), page : '1' },
-                    // Page 2 - KPI's - % Arrears, >90, NPL, Forborne, Closure
-                    { display : "Arrears %", format : fp, key : ofTotalHelper( { mre : "bal" }, "ArrsPc", [ { mre : "bal", subFilter : { dpd : xfFilter('dpd','Arrs',function(d){return d!=="UTD";}) }  }, { mre : "bal" } ]), page : '2' },
-                    { display : ">90 days %", format : fp, key : ofTotalHelper( { mre : "bal" }, "90PlusPc", [ { mre : "bal", subFilter : { dpd : ">90"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "NPL %", format : fp, key : ofTotalHelper( { mre : "bal" }, "NPLPc", [ { mre : "bal", subFilter : { npl : "b"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "Forborne %", format : fp, key : ofTotalHelper( { mre : "bal" }, "FbPc", [ { mre : "bal", subFilter : { forborne : "Y"}}, { mre : "bal" } ]), page : '2' },
-
-                    ],
+        cols : portfolioColumns(),
         rows : [ 	{ display : "" }, //need to reserve space
                     { display : "Total", key : {  } },
                     { display : " ", css : "blank" },
@@ -301,29 +236,7 @@ rptDef4 = function() {
         name : "rpt4",
         container : "rptLoanSize",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : [ 	{ display : "", css : "h4" }, //need to reserve space and set css
-                    //{ display : "Movement 13 mths", css : "sparkline" , key : { mre : "BlD"}, chartType : nv.models.sparkbarPlus },
-                    { display : "#", format : fd, key : { mre : "count"} },
-                    { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "bal" }, "Avg", [ { mre : "bal" }, { mre : "count" } ]), page : '0' },
-                    { display : "Balance", format : fv, key : { mre : "bal"} },
-                    // Default Page
-                    { display : "% of Total", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotalArr", [ {  mre : "bal" }, setDims(dataDims,state,{ mre : "bal"}) ]), page : '0' },
-                    //{ display : "% of All", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotal", [ { mre : "bal" }, setDims(dataDims,state,{mre : "bal"},{'dpd_band' : 1, npl : 1} ) ]), page : '0' },
-                    { display : "Provision", format : fv, key : { mre : "prv"}, page : '0'  },
-                    { display : "Prov Rate", format : fp, key : ofTotalHelper( { mre : "prv" }, "prvRate", [ { mre : "prv" }, { mre : "bal"} ]), page : '0' },
-                    // Page 1 - Financial Characteristics
-                    { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Term <BR> (remaining)", key : ofTotalHelper( { mre : "ew_rem_term" }, "remTerm", [ { mre : "ew_rem_term" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Time <BR> on Book", key : ofTotalHelper( { mre : "ew_TOB" }, "TOB", [ { mre : "ew_TOB" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Days <BR> in Arrears", key : ofTotalHelper( { mre : "ew_DiA" }, "DiA", [ { mre : "ew_DiA" }, { mre : "bal"} ]), page : '1' },
-                    { display : "iLTV %", key : ofTotalHelper( { mre : "ew_iLTV" }, "iLTV", [ { mre : "ew_iLTV", secured : "Y" }, { mre : "bal", secured : "Y"} ]), page : '1' },
-                    // Page 2 - KPI's - % Arrears, >90, NPL, Forborne, Closure
-                    { display : "Arrears %", format : fp, key : ofTotalHelper( { mre : "bal" }, "ArrsPc", [ { mre : "bal", subFilter : { dpd : xfFilter('dpd','Arrs',function(d){return d!=="UTD";}) }  }, { mre : "bal" } ]), page : '2' },
-                    { display : ">90 days %", format : fp, key : ofTotalHelper( { mre : "bal" }, "90PlusPc", [ { mre : "bal", subFilter : { dpd : ">90"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "NPL %", format : fp, key : ofTotalHelper( { mre : "bal" }, "NPLPc", [ { mre : "bal", subFilter : { npl : "b"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "Forborne %", format : fp, key : ofTotalHelper( { mre : "bal" }, "FbPc", [ { mre : "bal", subFilter : { forborne : "Y"}}, { mre : "bal" } ]), page : '2' },
-
-                    ],
+        cols : portfolioColumns(),
         rows : [ 	{ display : "" }, //need to reserve space
                     { display : "Total", key : {  } },
                     { display : " ", css : "blank" },
@@ -355,29 +268,7 @@ rptDef5 = function() {
         name : "rpt5",
         container : "rptLTV",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : [ 	{ display : "", css : "h4" }, //need to reserve space and set css
-                    //{ display : "Movement 13 mths", css : "sparkline" , key : { mre : "BlD"}, chartType : nv.models.sparkbarPlus },
-                    { display : "#", format : fd, key : { mre : "count"} },
-                    { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "bal" }, "Avg", [ { mre : "bal" }, { mre : "count" } ]), page : '0' },
-                    { display : "Balance", format : fv, key : { mre : "bal"} },
-                    // Default Page
-                    { display : "% of Total", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotalArr", [ {  mre : "bal" }, setDims(dataDims,state,{ mre : "bal"}) ]), page : '0' },
-                    //{ display : "% of All", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotal", [ { mre : "bal" }, setDims(dataDims,state,{mre : "bal"},{'dpd_band' : 1, npl : 1} ) ]), page : '0' },
-                    { display : "Provision", format : fv, key : { mre : "prv"}, page : '0'  },
-                    { display : "Prov Rate", format : fp, key : ofTotalHelper( { mre : "prv" }, "prvRate", [ { mre : "prv" }, { mre : "bal"} ]), page : '0' },
-                    // Page 1 - Financial Characteristics
-                    { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Term <BR> (remaining)", key : ofTotalHelper( { mre : "ew_rem_term" }, "remTerm", [ { mre : "ew_rem_term" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Time <BR> on Book", key : ofTotalHelper( { mre : "ew_TOB" }, "TOB", [ { mre : "ew_TOB" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Days <BR> in Arrears", key : ofTotalHelper( { mre : "ew_DiA" }, "DiA", [ { mre : "ew_DiA" }, { mre : "bal"} ]), page : '1' },
-                    { display : "iLTV %", key : ofTotalHelper( { mre : "ew_iLTV" }, "iLTV", [ { mre : "ew_iLTV", secured : "Y" }, { mre : "bal", secured : "Y"} ]), page : '1' },
-                    // Page 2 - KPI's - % Arrears, >90, NPL, Forborne, Closure
-                    { display : "Arrears %", format : fp, key : ofTotalHelper( { mre : "bal" }, "ArrsPc", [ { mre : "bal", subFilter : { dpd : xfFilter('dpd','Arrs',function(d){return d!=="UTD";}) }  }, { mre : "bal" } ]), page : '2' },
-                    { display : ">90 days %", format : fp, key : ofTotalHelper( { mre : "bal" }, "90PlusPc", [ { mre : "bal", subFilter : { dpd : ">90"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "NPL %", format : fp, key : ofTotalHelper( { mre : "bal" }, "NPLPc", [ { mre : "bal", subFilter : { npl : "b"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "Forborne %", format : fp, key : ofTotalHelper( { mre : "bal" }, "FbPc", [ { mre : "bal", subFilter : { forborne : "Y"}}, { mre : "bal" } ]), page : '2' },
-
-                    ],
+        cols : portfolioColumns(),
         rows : [ 	{ display : "" }, //need to reserve space
                     { display : "Total", key : {  } },
                     { display : " ", css : "blank" },
@@ -403,38 +294,12 @@ rptDef6 = function() {
         name : "rpt6",
         container : "rptGeo",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : [ 	{ display : "", css : "h4" }, //need to reserve space and set css
-                    //{ display : "Movement 13 mths", css : "sparkline" , key : { mre : "BlD"}, chartType : nv.models.sparkbarPlus },
-                    { display : "#", format : fd, key : { mre : "count"} },
-                    { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "bal" }, "Avg", [ { mre : "bal" }, { mre : "count" } ]), page : '0' },
-                    { display : "Balance", format : fv, key : { mre : "bal"} },
-                    // Default Page
-                    { display : "% of Total", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotalArr", [ {  mre : "bal" }, setDims(dataDims,state,{ mre : "bal"}) ]), page : '0' },
-                    //{ display : "% of All", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotal", [ { mre : "bal" }, setDims(dataDims,state,{mre : "bal"},{'dpd_band' : 1, npl : 1} ) ]), page : '0' },
-                    { display : "Provision", format : fv, key : { mre : "prv"}, page : '0'  },
-                    { display : "Prov Rate", format : fp, key : ofTotalHelper( { mre : "prv" }, "prvRate", [ { mre : "prv" }, { mre : "bal"} ]), page : '0' },
-                    // Page 1 - Financial Characteristics
-                    { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Term <BR> (remaining)", key : ofTotalHelper( { mre : "ew_rem_term" }, "remTerm", [ { mre : "ew_rem_term" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Time <BR> on Book", key : ofTotalHelper( { mre : "ew_TOB" }, "TOB", [ { mre : "ew_TOB" }, { mre : "bal"} ]), page : '1' },
-                    { display : "Avg Days <BR> in Arrears", key : ofTotalHelper( { mre : "ew_DiA" }, "DiA", [ { mre : "ew_DiA" }, { mre : "bal"} ]), page : '1' },
-                    { display : "iLTV %", key : ofTotalHelper( { mre : "ew_iLTV" }, "iLTV", [ { mre : "ew_iLTV", secured : "Y" }, { mre : "bal", secured : "Y"} ]), page : '1' },
-                    // Page 2 - KPI's - % Arrears, >90, NPL, Forborne, Closure
-                    { display : "Arrears %", format : fp, key : ofTotalHelper( { mre : "bal" }, "ArrsPc", [ { mre : "bal", subFilter : { dpd : xfFilter('dpd','Arrs',function(d){return d!=="UTD";}) }  }, { mre : "bal" } ]), page : '2' },
-                    { display : ">90 days %", format : fp, key : ofTotalHelper( { mre : "bal" }, "90PlusPc", [ { mre : "bal", subFilter : { dpd : ">90"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "NPL %", format : fp, key : ofTotalHelper( { mre : "bal" }, "NPLPc", [ { mre : "bal", subFilter : { npl : "b"  }}, { mre : "bal" } ]), page : '2'  },
-                    { display : "Forborne %", format : fp, key : ofTotalHelper( { mre : "bal" }, "FbPc", [ { mre : "bal", subFilter : { forborne : "Y"}}, { mre : "bal" } ]), page : '2' },
-
-                    ],
+        cols : portfolioColumns(),
         rows : [ 	{ display : "" }, //need to reserve space
                     { display : "Total", key : {  } },
                     { display : " ", css : "blank" },
                     { display : "Ireland", key : { sec_ctry : "IE" } },
-                    { display : "UK", key : { sec_ctry : "GB" } },
-                    { display : "Isle of Man", key : { sec_ctry : "IM" } },
-                    { display : "France", key : { sec_ctry : "FR" } },
                     { display : "Missing", key : { sec_ctry : "Missing" } },
-                    { display : "N/A", key : { sec_ctry : "NA" } },
                     { display : " ", css : "blank" },
                     { display : "RoI", css : "blank" },
                     { display : "Dublin", key : { region : "Dublin" } },
@@ -444,11 +309,26 @@ rptDef6 = function() {
                     { display : "Connacht", key : { region : "Connacht" } },
                     { display : "Ulster", key : { region : "Ulster" } },
                     { display : " ", css : "blank" },
-                    { display : "UK", css : "blank" },
-                    { display : "London", key : { region : "London" } },
-                    { display : "South East", key : { region : "South East" } },
-                    { display : "UK (rest of)", key : { region : "GB" } },
-                    ],
+                ],
+        eventHandlers : { '.cell' : { click : cellClicked }, 'tr' : { mouseover : highlightRow, mouseout : unhighlightRow } }
+    });
+}
+
+rptDef7 = function() {
+    return encodeDef({
+        ref: 7,
+        name : "rpt7",
+        container : "rptCounties",
+        key : defaultDims(dataDims,state,{'mre':'bal'}),
+        cols : portfolioColumns(),
+        rows : [ 	{ display : "" } //need to reserve space
+                ].concat(
+                    ["Carlow","Cavan","Clare","Cork","Donegal","Dublin","Galway","Kerry","Kildare","Kilkenny",
+                    "Laois","Leitrim","Limerick","Longford","Louth","Mayo","Meath","Monaghan",
+                    "Offaly","Roscommon","Sligo","Tipperary","Waterford","Westmeath","Wexford","Wicklow"].map(function(e,i,a){
+                        return { display : e, key : { sec_county : e } };
+                    })
+                ),
         eventHandlers : { '.cell' : { click : cellClicked }, 'tr' : { mouseover : highlightRow, mouseout : unhighlightRow } }
     });
 }
