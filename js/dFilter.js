@@ -89,7 +89,7 @@ function dFilter(options){
         }
         ret.initEach(); // run for each record
         filter['population'] = o.ndx;
-        console.log(JSON.stringify(dimsFilterHelper(filter['indexes'])));
+        console.log(JSON.stringify(dimsFilterHelper2(filter['indexes'])));
         ret.cube = []; //20150504 New functionality for creating partial cubes
         for(var e, i=0, a=o.dims, n=a.length; i<n; i+=1){ e = a[i];
             // initialise cube for all dimensions (less one)
@@ -116,7 +116,7 @@ function dFilter(options){
     ret.initEach = function(){
         var ndx, agg; //dim
         // Perform functions on each record
-        for(var e, i=0, a=o.data, n=a.length; i<n; i+=1){ e = a[i];
+        for(var e, i=0, a=o.data, n=a.length; i<n; i+=1){ e = a[i]; //console.log(e);
             // Add calculated/group dimensions to each object
             if(o.dimsToAdd){
                 for(var f, j=0, b=o.dimsToAdd, p=b.length; j<p; j+=1){ f = b[j];  //e,i,a for dimsToAdd - f = dim To Add
@@ -602,6 +602,24 @@ function dimsFilterHelper(index){
         r['order'] = index[k]['range'];
         r['colours'] = null;
         res.push(r);
+    }
+    return res;
+}
+
+function dimsFilterHelper2(index){
+    var res = {};
+    for(var k in index){
+        res[k] = index[k]['range'];
+    }
+    return res;
+}
+
+function dimsFilterHelper2(index){
+    var res = {};
+    for(var k in index){
+        var r = {};
+        r['colours'] = null;
+        res[k]=r;
     }
     return res;
 }
