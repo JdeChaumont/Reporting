@@ -73,15 +73,12 @@ function portfolioColumns(){
     return  [ 	{ display : "", css : "h4" }, //need to reserve space and set css
                 //{ display : "Movement 13 mths", css : "sparkline" , key : { mre : "BlD"}, chartType : nv.models.sparkbarPlus },
                 { display : "#", format : fd, key : { mre : "count"} },
-                { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "LOAN_AMOUNT" }, "Avg", [ { mre : "LOAN_AMOUNT" }, { mre : "count" } ]), page : '0' },
+                { display : "Avg €", format : fc, key : ofTotalHelper( { mre : "LOAN_AMOUNT" }, "Avg", [ { mre : "LOAN_AMOUNT" }, { mre : "count" } ]) },
                 { display : "Balance", format : fv, key : { mre : "LOAN_AMOUNT"} },
                 // Default Page
                 { display : "% of Total", format : fp, key : ofTotalHelper( { mre : "LOAN_AMOUNT" }, "OfTotalArr", [ {  mre : "LOAN_AMOUNT" }, setDims(dataDims,state,{ mre : "LOAN_AMOUNT"}) ]), page : '0' },
-                //{ display : "% of All", format : fp, key : ofTotalHelper( { mre : "bal" }, "OfTotal", [ { mre : "bal" }, setDims(dataDims,state,{mre : "bal"},{'dpd_band' : 1, npl : 1} ) ]), page : '0' },
-                //{ display : "Provision", format : fv, key : { mre : "prv"}, page : '0'  },
-                //{ display : "Prov Rate", format : fp, key : ofTotalHelper( { mre : "prv" }, "prvRate", [ { mre : "prv" }, { mre : "bal"} ]), page : '0' },
+                { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "LOAN_AMOUNT"} ]), page : '0' },
                 // Page 1 - Financial Characteristics
-                { display : "Avg Yield %", format : fmt(',.2f','',1), key : ofTotalHelper( { mre : "ew_int_rate" }, "iRate", [ { mre : "ew_int_rate" }, { mre : "LOAN_AMOUNT"} ]), page : '1' },
                 { display : "Avg Term", key : ofTotalHelper( { mre : "ew_term" }, "remTerm", [ { mre : "ew_term" }, { mre : "LOAN_AMOUNT"} ]), page : '1' },
                 { display : "iLTV %", key : ofTotalHelper( { mre : "WEIGHTED_LTV_CALC" }, "iLTV", [ { mre : "WEIGHTED_LTV_CALC" }, { mre : "LOAN_AMOUNT"} ]), page : '1' },
                 { display : "LTI", key : ofTotalHelper( { mre : "WEIGHTED_LTI_CALC" }, "LTI", [ { mre : "WEIGHTED_LTI_CALC" }, { mre : "LOAN_AMOUNT"} ]), page : '1' },
@@ -123,39 +120,26 @@ rptDef1 = function() {
     return encodeDef({
         ref: 1,
         name : "rpt1",
-        container : "rptArrears",
+        container : "rptLoans",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
         cols : portfolioColumns(),
         rows : [ 	{ display : "" }, //need to reserve space
                     { display : "Total", key : {  } },
                     { display : " ", css : "blank" },
-                    { display : "UTD", key : { dpd_band : "UTD" } },
-                    { display : "0-30 days", key : { dpd_band : "0-30" } },
-                    { display : "30-60", key : { dpd_band : "30-60" } },
-                    { display : "60-90", key : { dpd_band : "60-90" } },
-                    { display : ">90", key : { dpd : ">90" } },
+                    { display : "Loan Size", css : "blank" },
                     { display : " ", css : "blank" },
-                    { display : "Non-performing", css : "blank" },
-                    { display : "Total", key : { npl : "Y" } },
-                    { display : " ", css : "blank" },
-                    { display : "UTD", key : { npl : "Y", dpd : "UTD" } },
-                    { display : "0-30 days", key : { npl : "Y", dpd : ">0" } },
-                    { display : "30-90", key : { npl : "Y", dpd : ">30" } },
-                    { display : "90-180", key : { npl : "Y", dpd_band : "90-180" } },
-                    { display : "180-360", key : { npl : "Y", dpd_band : "180-360" } },
-                    { display : "360-720", key : { npl : "Y", dpd_band : "360-720" } },
-                    { display : "720+", key : { npl : "Y", dpd_band : "720+" } },
-                    { display : " ", css : "blank" },
-                    { display : "Performing", css : "blank" },
-                    { display : "Total", key : { npl : "N" } },
-                    { display : " ", css : "blank" },
-                    { display : "UTD", key : { npl : "N", dpd : "UTD" } },
-                    { display : "0-30 days", key : { npl : "N", dpd_band : "0-30" } },
-                    { display : "30-60", key : { npl : "N", dpd_band : "30-60" } },
-                    { display : "60-90", key : { npl : "N", dpd_band : "60-90" } },
-                    { display : ">90", key : { npl : "N", dpd : ">90" } },
+                ].concat(["<=50K","50K-<=100K","100K-<=250K","250K-<=500K","500K-<=1M",">1M"].map(function(e,i,a){
+                        return { display : e, key : { loan_size_band : e } };
+                    })
+                ).concat([ 	{ display : "", css : "blank" }, //need to reserve space
+                            { display : "Term", css : "blank" },
+                            { display : " ", css : "blank" }
+                        ]
+                ).concat(["<=5","5-10","10-15","15-20","20-25","25-30","30-35","35-40",">40"].map(function(e,i,a){
+                        return { display : e, key : {term_band : e } };
+                    })
 
-                    ],
+                ),
         eventHandlers : { '.cell' : { click : cellClicked }, 'tr' : { mouseover : highlightRow, mouseout : unhighlightRow } }
     });
 }
@@ -164,28 +148,26 @@ rptDef2 = function() {
     return encodeDef({
         ref: 2,
         name : "rpt2",
-        container : "rptFB",
+        container : "rptCredit",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
         cols : portfolioColumns(),
         rows : [ 	{ display : "" }, //need to reserve space
                     { display : "Total", key : {  } },
                     { display : " ", css : "blank" },
-                    { display : "Not Forborne", key : { forborne : "N" } },
-                    { display : "Forborne", key : { forborne : "Y" } },
+                    { display : "Loan To Value", css : "blank" },
                     { display : " ", css : "blank" },
-                    { display : "Measures", css : "blank" },
-                    { display : " ", css : "blank" },
-                    { display : "Term extension", key : { fb : "Term extension" } },
-                    { display : "Capitalisation", key : { fb : "Capitalisation" } },
-                    { display : "Hybrid", key : { fb : "Hybrid" } },
-                    { display : ">I/O", key : { fb : ">I/O" } },
-                    { display : "I/O", key : { fb : "I/O" } },
-                    { display : "&lt;I/O", key : { fb : "<I/O" } },
-                    { display : "Split", key : { fb : "Split" } },
-                    { display : "Zero", key : { fb : "Zero" } },
-                    { display : "Other", key : { fb : "Other" } },
-                    { display : " ", css : "blank" },
-                ],
+                ].concat(["<=50",">50<=55",">55<=60",">60<=65",">65<=70",">70<=75",">75<=80",">80<=85",">85<=90",">90<=95",">95<=100",">100%"].map(function(e,i,a){
+                        return { display : e, key : { LTV_BAND : e } };
+                    })
+                ).concat([ 	{ display : " ", css : "blank" }, //need to reserve space
+                            { display : "Loan To Income", css : "blank" },
+                            { display : " ", css : "blank" }
+                        ]
+                ).concat(["<=1","1-2","2-2.5","2.5-3","3-3.5","3.5-4","4-4.5","4.5-5",">5"].map(function(e,i,a){
+                        return { display : e, key : { lti_band : e } };
+                    })
+
+                ),
         eventHandlers : { '.cell' : { click : cellClicked }, 'tr' : { mouseover : highlightRow, mouseout : unhighlightRow } }
     });
 }
@@ -194,125 +176,6 @@ rptDef3 = function() {
     return encodeDef({
         ref: 3,
         name : "rpt3",
-        container : "rptRate",
-        key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : portfolioColumns(),
-        rows : [ 	{ display : "" }, //need to reserve space
-                    { display : "Total", key : {  } },
-                    { display : " ", css : "blank" },
-                    { display : "Rate Type", css : "blank" },
-                    { display : " ", css : "blank" },
-                    { display : "Tracker", key : { int_rate_type : "Tracker" } },
-                    { display : "Variable", key : { int_rate_type : "Variable" } },
-                    { display : "Fixed", key : { int_rate_type : "Fixed" } },
-                    { display : " ", css : "blank" },
-                    /*{ display : "Yield", css : "blank" },
-                    { display : " ", css : "blank" },
-                    { display : "0%", key : { int_rate_band : "=0" } },
-                    { display : ">0-<1%", key : { int_rate_band : "0<1.0" } },
-                    { display : "1.0<=2.0%", key : { int_rate_band : "1.0<=2.0" } },
-                    { display : "2.0<=5.0%", key : { int_rate_band : "2.0<=5.0" } },
-                    { display : "5.0<=10.0%", key : { int_rate_band : "5.0<=10.0" } },
-                    { display : "10.0<=20.0%", key : { int_rate_band : "10.0<=20.0" } },
-                    { display : "Not Applicable", key : { int_rate_band : "NA" } },
-                    { display : " ", css : "blank" },*/
-                    { display : "Origination", css : "blank" },
-                    { display : " ", css : "blank" },
-                    { display : "pre-2002", key : { orig_band : "-<2001" } },
-                    { display : "2002-2004", key : { orig_band : "2002-2004" } },
-                    { display : "2005-2008", key : { orig_band : "2005-2008" } },
-                    { display : "2009-2011", key : { orig_band : "2009-2011" } },
-                    { display : "post-2011", key : { orig_band : "2012<-\t" } }
-                ],
-        eventHandlers : { '.cell' : { click : cellClicked }, 'tr' : { mouseover : highlightRow, mouseout : unhighlightRow } }
-    });
-}
-
-rptDef4 = function() {
-    return encodeDef({
-        ref: 4,
-        name : "rpt4",
-        container : "rptLoanSize",
-        key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : portfolioColumns(),
-        rows : [ 	{ display : "" }, //need to reserve space
-                    { display : "Total", key : {  } },
-                    { display : " ", css : "blank" },
-                    { display : "Repayment Type", css : "blank" },
-                    { display : " ", css : "blank" },
-                    { display : "C&I", key : { repay_type : "C&I" } },
-                    { display : "Part C&I", key : { repay_type : "Part C&I" } },
-                    { display : "I/O", key : { repay_type : "I/O" } },
-                    { display : " ", css : "blank" },
-                    { display : "Loan Size", css : "blank" },
-                    { display : " ", css : "blank" },
-                    { display : "0-<50K", key : { loan_size_band : "20K-<50K" } },
-                    { display : "50K-<100K", key : { loan_size_band : "50K-<100K" } },
-                    { display : "100K-<250K", key : { loan_size_band : "100K-<250K" } },
-                    { display : "250K-<500K", key : { loan_size_band : "250K-<500K" } },
-                    { display : "500K-<1M", key : { loan_size_band : "500K-<1M" } },
-                    { display : "1M-high+", key : { loan_size_band : "1M-high" } }
-                ],
-        eventHandlers : { '.cell' : { click : cellClicked }, 'tr' : { mouseover : highlightRow, mouseout : unhighlightRow } }
-    });
-}
-
-rptDef5 = function() {
-    return encodeDef({
-        ref: 5,
-        name : "rpt5",
-        container : "rptLTV",
-        key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : portfolioColumns(),
-        rows : [ 	{ display : "" }, //need to reserve space
-                    { display : "Total", key : {  } },
-                    { display : " ", css : "blank" },
-                    { display : "0-70%", key : { ltv_band : "<=70" } },
-                    { display : "70-<100%", key : { ltv_band : "70-<100" } },
-                    { display : "100-<120", key : { ltv_band : "100-<120" } },
-                    { display : "120-<150", key : { ltv_band : "120-<150" } },
-                    { display : "150+", key : { ltv_band : "150+" } },
-                    { display : "Exclusions", key : { ltv_band : "LTVexclusions" } },
-                    { display : "N/A", key : { ltv_band : "NA" } },
-                    { display : " ", css : "blank" },
-                    { display : "Equity", css : "blank" },
-                    { display : "Positive", key : { neg_eq : "N" } },
-                    { display : "Negative", key : { neg_eq : "Y" } },
-                    ],
-        eventHandlers : { '.cell' : { click : cellClicked }, 'tr' : { mouseover : highlightRow, mouseout : unhighlightRow } }
-    });
-}
-
-rptDef6 = function() {
-    return encodeDef({
-        ref: 6,
-        name : "rpt6",
-        container : "rptGeo",
-        key : defaultDims(dataDims,state,{'mre':'bal'}),
-        cols : portfolioColumns(),
-        rows : [ 	{ display : "" }, //need to reserve space
-                    { display : "Total", key : {  } },
-                    { display : " ", css : "blank" },
-                    { display : "Ireland", key : { sec_ctry : "IE" } },
-                    { display : "Missing", key : { sec_ctry : "Missing" } },
-                    { display : " ", css : "blank" },
-                    { display : "RoI", css : "blank" },
-                    { display : "Dublin", key : { region : "Dublin" } },
-                    { display : "Leinster (rest of)", key : { region : "Leinster" } },
-                    { display : "Cork", key : { region : "Cork" } },
-                    { display : "Munster (rest of)", key : { region : "Munster" } },
-                    { display : "Connacht", key : { region : "Connacht" } },
-                    { display : "Ulster", key : { region : "Ulster" } },
-                    { display : " ", css : "blank" },
-                ],
-        eventHandlers : { '.cell' : { click : cellClicked }, 'tr' : { mouseover : highlightRow, mouseout : unhighlightRow } }
-    });
-}
-
-rptDef1 = function() {
-    return encodeDef({
-        ref: 1,
-        name : "rpt1",
         container : "rptRegions",
         key : defaultDims(dataDims,state,{'mre':'LOAN_AMOUNT'}),
         cols : portfolioColumns(),
@@ -330,10 +193,10 @@ rptDef1 = function() {
     });
 }
 
-rptDef7 = function() {
+rptDef4 = function() {
     return encodeDef({
-        ref: 7,
-        name : "rpt7",
+        ref: 4,
+        name : "rpt4",
         container : "rptCounties",
         key : defaultDims(dataDims,state,{'mre':'bal'}),
         cols : portfolioColumns(),

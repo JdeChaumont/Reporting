@@ -272,7 +272,7 @@ function loadReport(){
     //*******************************************************************************
     //Changed to dropdown
     var report = stateElementDropdown(state, "report", "dropdown-style",
-        ["Group Overview","Arrears Performance", "Forbearance", "Rate Characteristics", "Loan Size distribution","Loan to Value", "Geographic Distribution", "Counties", "Marimekko"],null,
+        ["Group Overview ","Loan Characteristics", "Credit Characteristics", "Regions", "Counties", "Marimekko"],null,
         [reportChange("rpt"),outputStyle("rpt")]); //Additional Handler to fade in/out pages
 
 
@@ -289,7 +289,7 @@ function loadReport(){
     //*******************************************************************************
     // Back to UI creation
     //*******************************************************************************
-    var rptPortfolio = stateElement(state, "prt", css,["All","Applications","Offers","Funded"],["_","Application","Offer","Funded"]);//,null,0,[0,3,2,1]);
+    var rptPortfolio = stateElement(state, "set", css,["All","Applications","Offers","Funded"],["_","Application","Offer","Funded"],null,1,[0,3,2,1]);
     var rptPeriod = stateElement(state, "rptPeriod", cssBtnSm,["YTD 2015"],[0],null,0);
     var rptUOM = stateElement(state, "uom", cssBtnSm,["€", "#"],['LOAN_AMOUNT','count']);
 
@@ -475,31 +475,31 @@ function loadReport(){
     //Initalise reports
     var reportDef0 = rptDef0();
     var reportDef1 = rptDef1();
-    /*var reportDef2 = rptDef2();
+    var reportDef2 = rptDef2();
     var reportDef3 = rptDef3();
     var reportDef4 = rptDef4();
-    var reportDef5 = rptDef5();
-    var reportDef6 = rptDef6();*/
-    var reportDef7 = rptDef7();
+    /*var reportDef5 = rptDef5();
+    var reportDef6 = rptDef6();
+    var reportDef7 = rptDef7();*/
 
-    var rptDiv = rpts[reportDef0.name] = rpts[reportDef0.ref] = jdcGrid({source : pxf, def: reportDef0, pageCtrl : state['rptPage'] });
-    var rptArrs = rpts[reportDef1.name] = rpts[reportDef1.ref] = jdcGrid({source : pxf, def: reportDef1, pageCtrl : state['rptPage'] });
-    /*var rptFB = rpts[reportDef2.name] = rpts[reportDef2.ref] = jdcGrid({source : pxf, def: reportDef2, pageCtrl : state['rptPage'] });
-    var rptRate = rpts[reportDef3.name] = rpts[reportDef3.ref] = jdcGrid({source : pxf, def: reportDef3, pageCtrl : state['rptPage'] });
-    var rptLoanSize = rpts[reportDef4.name] = rpts[reportDef4.ref] = jdcGrid({source : pxf, def: reportDef4, pageCtrl : state['rptPage'] });
-    var rptLTV = rpts[reportDef5.name] = rpts[reportDef5.ref] = jdcGrid({source : pxf, def: reportDef5, pageCtrl : state['rptPage'] });
-    var rptGeo = rpts[reportDef6.name] = rpts[reportDef6.ref] = jdcGrid({source : pxf, def: reportDef6, pageCtrl : state['rptPage'] });*/
-    var rptCounties = rpts[reportDef7.name] = rpts[reportDef7.ref] = jdcGrid({source : pxf, def: reportDef7, pageCtrl : state['rptPage'] });
+    var rptGrp = rpts[reportDef0.name] = rpts[reportDef0.ref] = jdcGrid({source : pxf, def: reportDef0, pageCtrl : state['rptPage'] });
+    var rptLoans = rpts[reportDef1.name] = rpts[reportDef1.ref] = jdcGrid({source : pxf, def: reportDef1, pageCtrl : state['rptPage'] });
+    var rptCredit = rpts[reportDef2.name] = rpts[reportDef2.ref] = jdcGrid({source : pxf, def: reportDef2, pageCtrl : state['rptPage'] });
+    var rptRegions = rpts[reportDef3.name] = rpts[reportDef3.ref] = jdcGrid({source : pxf, def: reportDef3, pageCtrl : state['rptPage'] });
+    var rptCounties = rpts[reportDef4.name] = rpts[reportDef4.ref] = jdcGrid({source : pxf, def: reportDef4, pageCtrl : state['rptPage'] });
+    /*var rptLTV = rpts[reportDef5.name] = rpts[reportDef5.ref] = jdcGrid({source : pxf, def: reportDef5, pageCtrl : state['rptPage'] });
+    var rptGeo = rpts[reportDef6.name] = rpts[reportDef6.ref] = jdcGrid({source : pxf, def: reportDef6, pageCtrl : state['rptPage'] });
+    var rptCounties = rpts[reportDef7.name] = rpts[reportDef7.ref] = jdcGrid({source : pxf, def: reportDef7, pageCtrl : state['rptPage'] });*/
 
     //state.addView({ref:0, update:function(){return 0;}},0);
-    state.addView(rptDiv,0);
-    state.addView(rptArrs,1);
-    /*state.addView(rptFB,2);
-    state.addView(rptRate,3);
-    state.addView(rptLoanSize,4);
-    state.addView(rptLTV,5);
-    state.addView(rptGeo,6);*/
-    state.addView(rptCounties,7);
+    state.addView(rptGrp,0);
+    state.addView(rptLoans,1);
+    state.addView(rptCredit,2);
+    state.addView(rptRegions,3);
+    state.addView(rptCounties,4);
+    /*state.addView(rptLTV,5);
+    state.addView(rptGeo,6);
+    state.addView(rptCounties,7);*/
 
     //*******************************************************************************
     // Marimekko chart
@@ -555,14 +555,14 @@ function loadReport(){
     var mekko = dDimMekko(mekkoOptions);
     //console.log(mekko);
 
-    var rptMekko = rpts["rpt8"] = rpts[8] = mekko;
-    state.addView({ref:8, update:rptMekko.update },8); // will add to views and update called when view is active
+    var rptMekko = rpts["rpt5"] = rpts[5] = mekko;
+    state.addView({ref:5, update:rptMekko.update },5); // will add to views and update called when view is active
 
     //*******************************************************************************
     //Step 5 - Set-up event handler and finalise
     //*******************************************************************************
     $(window) //move this to bottom
         .bind( 'hashchange', function(e) { anchor.onHashchange(e);  } )
-    anchor.changeAnchorPart({report:0});
+    anchor.changeAnchorPart({set:1,report:0});
 
 }

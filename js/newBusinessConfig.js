@@ -4,7 +4,7 @@ console.log(periods);
 
 var dims = {
     "mre":{"display":"mre","value":0},
-    "set":{"display":"set","value":1},
+    "set":{"display":"Status","value":1},
     "tYear":{"display":"Year","value":2},
     "tMonth":{"display":"Month","value":3},
     "tDayOfWeek":{"display":"Day (wk)","value":4},
@@ -84,7 +84,7 @@ var popBtns = ["LOAN_TYPE","PROPERTY_STYLE","COUNTY_AREA","LTV_BAND","LTV_BREACH
 var popBtnsA = ["set","tYear","tMonth","tDayOfWeek","tWeekOfMonth","FUNDED_POST_REGS_FLAG","REPORTING_CATEGORY","STAGE_PAYMENT_FLAG","CHANNEL","BRANCH_REGION","BRANCH_NAME"];
 
 var filterDimsNew = {
-        "set":{"colours":null},
+        "set":{"colours":null, 'hide' : true},
         "tYear":{"colours":null},
         "tMonth":{"colours":null},
         "tDayOfWeek":{"colours":null, 'hide' : true},
